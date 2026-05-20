@@ -22,12 +22,15 @@ export default class extends Controller {
 
     // After signInWithRedirect completes, Firebase updates auth state.
     // onAuthStateChanged is more reliable than getRedirectResult for picking this up.
+    this.showInfo("Checking auth state…")
     firebase.auth().onAuthStateChanged(user => {
       if (user && !this.tokenPosted) {
         this.tokenPosted = true
-        this.setStatus("Signing in…")
+        this.showInfo(`Auth OK (${user.email}) — creating session…`)
         user.getIdToken(true).then(token => this.postToken(token))
           .catch(error => this.showError(error.message))
+      } else if (!user) {
+        this.showInfo("")
       }
     })
   }
@@ -59,9 +62,18 @@ export default class extends Controller {
     .catch(error => this.showError(`Network error: ${error.message}`))
   }
 
+  showInfo(message) {
+    if (this.hasErrorTarget) {
+      this.errorTarget.style.color = "var(--color-muted)"
+      this.errorTarget.textContent = message
+      this.errorTarget.hidden = !message
+    }
+  }
+
   showError(message) {
     this.setStatus("")
     if (this.hasErrorTarget) {
+      this.errorTarget.style.color = "var(--color-danger)"
       this.errorTarget.textContent = message
       this.errorTarget.hidden = false
     }

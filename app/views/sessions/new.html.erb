@@ -1,9 +1,15 @@
 <% content_for :title, "Sign in — Commoter" %>
 
 <% content_for :head do %>
+  <%# Prevent Turbo from serving this page from cache — Firebase needs a full reload to restore auth state after redirect %>
+  <meta name="turbo-visit-control" content="reload">
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-  <script>firebase.initializeApp(<%= firebase_web_config_json.html_safe %>);</script>
+  <script>
+    if (!firebase.apps.length) {
+      firebase.initializeApp(<%= firebase_web_config_json.html_safe %>);
+    }
+  </script>
 <% end %>
 
 <div class="login-page">
