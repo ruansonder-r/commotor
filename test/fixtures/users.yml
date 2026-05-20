@@ -1,0 +1,14 @@
+alice:
+  uid: uid_alice
+  display_name: Alice Smith
+  email: alice@example.com
+
+bob:
+  uid: uid_bob
+  display_name: Bob Jones
+  email: bob@example.com
+
+carol:
+  uid: uid_carol
+  display_name: Carol White
+  email: carol@example.com

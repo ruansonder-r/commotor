@@ -1,0 +1,16 @@
+<% content_for :title, "Sign in — Commoter" %>
+
+<div class="login-page">
+  <div class="login-card">
+    <h1 class="login-card__app-name">Commoter</h1>
+    <p class="login-card__tagline">Track your carpool costs</p>
+
+    <%# The Android native bridge intercepts this button and handles Google Sign-In natively.
+        On success the native layer POSTs the Firebase ID token to /session. %>
+    <button class="btn-google-signin"
+            data-bridge-component="google-sign-in"
+            data-bridge-destination="<%= session_path %>">
+      Sign in with Google
+    </button>
+  </div>
+</div>

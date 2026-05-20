@@ -1,0 +1,11 @@
+log_one:
+  carpool_group: may_group
+  recorded_by_user_id: <%= ActiveRecord::FixtureSet.identify(:alice) %>
+  occurred_at: 2026-05-15 08:00:00
+  trip_count: 1
+
+log_two:
+  carpool_group: may_group
+  recorded_by_user_id: <%= ActiveRecord::FixtureSet.identify(:bob) %>
+  occurred_at: 2026-05-16 08:00:00
+  trip_count: 1

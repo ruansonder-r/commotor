@@ -1,0 +1,5 @@
+<%= turbo_stream.replace dom_id(@group, :tally) do %>
+  <%= turbo_frame_tag dom_id(@group, :tally) do %>
+    <%= render "carpool_groups/tally", group: @group, memberships: @memberships %>
+  <% end %>
+<% end %>

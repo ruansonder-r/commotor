@@ -1,0 +1,33 @@
+<% content_for :title, "#{@group.name} — Commoter" %>
+<% content_for :header_title, @group.name %>
+
+<div class="group-detail">
+  <div class="group-meta">
+    <span class="group-meta__item"><%= @group.month.strftime("%B %Y") %></span>
+    <span class="group-meta__sep">&middot;</span>
+    <span class="group-meta__item"><%= @group.car.name %> (R<%= @group.car.cost_per_km %>/km)</span>
+    <span class="group-meta__sep">&middot;</span>
+    <span class="group-meta__item"><%= @group.trip.name %> (<%= @group.trip.distance_km %> km)</span>
+  </div>
+
+  <%= turbo_frame_tag dom_id(@group, :tally) do %>
+    <%= render "tally", group: @group, memberships: @memberships %>
+  <% end %>
+
+  <div class="group-actions">
+    <%= link_to "Export Receipt",
+                carpool_group_receipt_path(@group),
+                class: "btn btn--secondary",
+                data: { bridge_component: "open-external-url" } %>
+  </div>
+</div>
+
+<%# FAB — the Android bridge can upgrade this to a native FAB; works as a plain button on web %>
+<div class="fab-container">
+  <%= button_to "+",
+                carpool_group_trip_logs_path(@group),
+                method: :post,
+                class: "fab",
+                data: { bridge_component: "floating-action-button",
+                        turbo_stream: true } %>
+</div>

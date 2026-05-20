@@ -1,0 +1,23 @@
+<% content_for :title, "My Groups — Commoter" %>
+<% content_for :header_title, "My Groups" %>
+
+<% if @carpool_groups.any? %>
+  <ul class="group-list">
+    <% @carpool_groups.each do |group| %>
+      <li class="group-card">
+        <%= link_to carpool_group_path(group), class: "group-card__link" do %>
+          <div class="group-card__body">
+            <span class="group-card__name"><%= group.name %></span>
+            <span class="group-card__meta"><%= group.month.strftime("%B %Y") %></span>
+            <span class="group-card__meta"><%= group.car.name %> &middot; <%= group.trip.name %></span>
+          </div>
+          <span class="group-card__chevron">›</span>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <div class="empty-state">
+    <p>You are not a member of any carpool groups yet.</p>
+  </div>
+<% end %>

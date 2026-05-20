@@ -1,0 +1,248 @@
+/*
+ * This is a manifest file that'll be compiled into application.css.
+ */
+
+/* ─── Reset / Base ──────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --color-primary:    #1a73e8;
+  --color-primary-dk: #1558b0;
+  --color-danger:     #d93025;
+  --color-surface:    #ffffff;
+  --color-bg:         #f1f3f4;
+  --color-border:     #dadce0;
+  --color-text:       #202124;
+  --color-muted:      #5f6368;
+  --radius:           8px;
+  --shadow-sm:        0 1px 3px rgba(0,0,0,.12);
+  --shadow-md:        0 4px 12px rgba(0,0,0,.15);
+}
+
+html { font-size: 16px; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+a { color: var(--color-primary); text-decoration: none; }
+
+/* ─── App Header ────────────────────────────────────────────────── */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 56px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.app-header__title { font-size: 18px; font-weight: 600; }
+
+.app-header__signout {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 8px 0;
+}
+
+/* ─── Flash ─────────────────────────────────────────────────────── */
+.flash {
+  padding: 12px 16px;
+  font-size: 14px;
+}
+
+.flash--notice { background: #e8f5e9; color: #1b5e20; }
+.flash--alert  { background: #fce8e6; color: #c5221f; }
+
+/* ─── Main Content ──────────────────────────────────────────────── */
+.main-content { padding: 16px; max-width: 600px; margin: 0 auto; }
+
+/* ─── Login Page ────────────────────────────────────────────────── */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg);
+}
+
+.login-card {
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: 48px 32px;
+  text-align: center;
+  width: 100%;
+  max-width: 360px;
+}
+
+.login-card__app-name { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+.login-card__tagline  { color: var(--color-muted); margin-bottom: 32px; }
+
+.btn-google-signin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 24px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-google-signin:hover { background: #f8f9fa; }
+
+/* ─── Group List (Dashboard) ────────────────────────────────────── */
+.group-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+
+.group-card {
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.group-card__link {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  color: var(--color-text);
+  min-height: 72px;
+}
+
+.group-card__body  { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.group-card__name  { font-size: 16px; font-weight: 600; }
+.group-card__meta  { font-size: 13px; color: var(--color-muted); }
+.group-card__chevron { font-size: 22px; color: var(--color-muted); margin-left: 8px; }
+
+/* ─── Empty State ───────────────────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--color-muted);
+}
+
+/* ─── Group Detail ──────────────────────────────────────────────── */
+.group-meta {
+  font-size: 13px;
+  color: var(--color-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.group-meta__sep { color: var(--color-border); }
+
+/* ─── Tally ─────────────────────────────────────────────────────── */
+.tally {
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.tally__summary {
+  display: flex;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tally__stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 16px;
+}
+
+.tally__stat + .tally__stat { border-left: 1px solid var(--color-border); }
+
+.tally__label { font-size: 12px; color: var(--color-muted); text-transform: uppercase; letter-spacing: .04em; }
+.tally__value { font-size: 26px; font-weight: 700; margin-top: 4px; }
+.tally__value--highlight { color: var(--color-primary); }
+
+/* ─── Members Table ─────────────────────────────────────────────── */
+.members-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.members-table th,
+.members-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+}
+
+.members-table tbody tr:last-child td { border-bottom: none; }
+.members-table th { font-size: 12px; color: var(--color-muted); text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
+
+.text-right { text-align: right; }
+
+/* ─── Group Actions ─────────────────────────────────────────────── */
+.group-actions { margin-bottom: 80px; }
+
+/* ─── Buttons ───────────────────────────────────────────────────── */
+.btn {
+  display: inline-block;
+  padding: 11px 24px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  text-align: center;
+}
+
+.btn--secondary {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-primary);
+  width: 100%;
+  display: block;
+  padding: 14px;
+}
+
+/* ─── FAB ───────────────────────────────────────────────────────── */
+.fab-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+}
+
+.fab-container form { margin: 0; }
+
+.fab {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: white;
+  font-size: 28px;
+  font-weight: 300;
+  border: none;
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.fab:active { background: var(--color-primary-dk); transform: scale(0.95); }

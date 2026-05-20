@@ -1,0 +1,31 @@
+<div class="tally">
+  <div class="tally__summary">
+    <div class="tally__stat">
+      <span class="tally__label">Total trips</span>
+      <span class="tally__value"><%= group.trip_logs.sum(:trip_count) %></span>
+    </div>
+    <div class="tally__stat">
+      <span class="tally__label">Total cost</span>
+      <span class="tally__value tally__value--highlight">R<%= "%.2f" % group.monthly_tally %></span>
+    </div>
+  </div>
+
+  <table class="members-table">
+    <thead>
+      <tr>
+        <th>Member</th>
+        <th class="text-right">Share</th>
+        <th class="text-right">Owes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% memberships.each do |m| %>
+        <tr>
+          <td><%= m.user.display_name %></td>
+          <td class="text-right"><%= "%.0f" % (m.cost_split_percentage * 100) %>%</td>
+          <td class="text-right">R<%= "%.2f" % m.amount_owed %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

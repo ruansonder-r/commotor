@@ -1,0 +1,14 @@
+alice_may:
+  user: alice
+  carpool_group: may_group
+  cost_split_percentage: 0.30
+
+bob_may:
+  user: bob
+  carpool_group: may_group
+  cost_split_percentage: 0.40
+
+carol_may:
+  user: carol
+  carpool_group: may_group
+  cost_split_percentage: 0.30
