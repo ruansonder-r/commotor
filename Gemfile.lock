@@ -422,6 +422,7 @@ DEPENDENCIES
   importmap-rails
   jbuilder
   kamal
+  matrix
   pg (~> 1.5)
   prawn
   prawn-table
