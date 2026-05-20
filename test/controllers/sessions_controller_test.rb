@@ -39,6 +39,6 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
   test "DELETE destroy clears the session and redirects to login" do
     sign_in_as(users(:alice))
     delete session_path
-    assert_redirected_to new_session_path
+    assert_redirected_to new_session_path(signout: 1)
   end
 end

@@ -10,14 +10,26 @@ export default class extends Controller {
       return
     }
 
-    firebase.auth().getRedirectResult()
-      .then(result => {
-        if (result && result.user) {
-          this.setStatus("Signing in…")
-          return result.user.getIdToken().then(token => this.postToken(token))
-        }
+    // If this is an explicit sign-out visit, sign out of Firebase too
+    // so onAuthStateChanged doesn't immediately re-sign the user in.
+    const params = new URLSearchParams(window.location.search)
+    if (params.get("signout")) {
+      firebase.auth().signOut().then(() => {
+        window.history.replaceState({}, "", "/session/new")
       })
-      .catch(error => this.showError(`${error.code}: ${error.message}`))
+      return
+    }
+
+    // After signInWithRedirect completes, Firebase updates auth state.
+    // onAuthStateChanged is more reliable than getRedirectResult for picking this up.
+    firebase.auth().onAuthStateChanged(user => {
+      if (user && !this.tokenPosted) {
+        this.tokenPosted = true
+        this.setStatus("Signing in…")
+        user.getIdToken(true).then(token => this.postToken(token))
+          .catch(error => this.showError(error.message))
+      }
+    })
   }
 
   signIn() {
