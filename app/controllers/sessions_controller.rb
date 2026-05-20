@@ -10,7 +10,7 @@ class SessionsController < ApplicationController
 
   def create
     FirebaseIdToken::Certificates.request
-    payload = FirebaseIdToken::Signature.verify(params[:token])
+    payload = FirebaseIdToken::Signature.verify(params[:firebase_token])
 
     if payload
       user = User.find_or_initialize_by(uid: payload["user_id"])

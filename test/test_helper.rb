@@ -28,7 +28,7 @@ module AuthTestHelper
   def sign_in_as(user)
     payload = { "user_id" => user.uid, "name" => user.display_name, "email" => user.email }
     stub_class_method(FirebaseIdToken::Signature, :verify, payload) do
-      post session_path, params: { token: "stub" }
+      post session_path, params: { firebase_token: "stub" }
     end
   end
 end

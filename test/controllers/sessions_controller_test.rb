@@ -11,7 +11,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
   test "POST create with a valid Firebase token creates session" do
     payload = { "user_id" => "uid_new", "name" => "New User", "email" => "new@example.com" }
     stub_class_method(FirebaseIdToken::Signature, :verify, payload) do
-      post session_path, params: { token: "valid_token" }
+      post session_path, params: { firebase_token: "valid_token" }
     end
     assert_response :created
     assert_equal "ok", JSON.parse(response.body)["status"]
@@ -23,14 +23,14 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     payload = { "user_id" => alice.uid, "name" => alice.display_name, "email" => alice.email }
     stub_class_method(FirebaseIdToken::Signature, :verify, payload) do
       assert_no_difference "User.count" do
-        post session_path, params: { token: "valid_token" }
+        post session_path, params: { firebase_token: "valid_token" }
       end
     end
   end
 
   test "POST create with an invalid token returns 401" do
     stub_class_method(FirebaseIdToken::Signature, :verify, nil) do
-      post session_path, params: { token: "bad_token" }
+      post session_path, params: { firebase_token: "bad_token" }
     end
     assert_response :unauthorized
     assert_includes JSON.parse(response.body)["error"], "Invalid"

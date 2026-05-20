@@ -1,13 +1,29 @@
 <% content_for :title, "Sign in — Commoter" %>
 
+<% content_for :head do %>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script>
+    firebase.initializeApp({
+      apiKey: "AIzaSyC_F7XeyvrWsv4d7adDAV8UTEYFH35AzoI",
+      authDomain: "commoter.firebaseapp.com",
+      projectId: "commoter",
+      storageBucket: "commoter.firebasestorage.app",
+      messagingSenderId: "10058955904",
+      appId: "1:10058955904:web:179c0e2cfc3506df7cfa65"
+    });
+  </script>
+<% end %>
+
 <div class="login-page">
   <div class="login-card">
     <h1 class="login-card__app-name">Commoter</h1>
     <p class="login-card__tagline">Track your carpool costs</p>
 
-    <%# The Android native bridge intercepts this button and handles Google Sign-In natively.
-        On success the native layer POSTs the Firebase ID token to /session. %>
     <button class="btn-google-signin"
+            data-controller="firebase-auth"
+            data-action="click->firebase-auth#signIn"
+            data-firebase-auth-session-url-value="<%= session_path %>"
             data-bridge-component="google-sign-in"
             data-bridge-destination="<%= session_path %>">
       Sign in with Google
