@@ -7,39 +7,27 @@ export default class extends Controller {
   connect() {
     if (typeof firebase === "undefined") {
       this.showError("Firebase SDK failed to load.")
-      return
     }
-
-    // If this is an explicit sign-out visit, sign out of Firebase too
-    // so onAuthStateChanged doesn't immediately re-sign the user in.
-    const params = new URLSearchParams(window.location.search)
-    if (params.get("signout")) {
-      firebase.auth().signOut().then(() => {
-        window.history.replaceState({}, "", "/session/new")
-      })
-      return
-    }
-
-    // After signInWithRedirect completes, Firebase updates auth state.
-    // onAuthStateChanged is more reliable than getRedirectResult for picking this up.
-    this.showInfo("Checking auth state…")
-    firebase.auth().onAuthStateChanged(user => {
-      if (user && !this.tokenPosted) {
-        this.tokenPosted = true
-        this.showInfo(`Auth OK (${user.email}) — creating session…`)
-        user.getIdToken(true).then(token => this.postToken(token))
-          .catch(error => this.showError(error.message))
-      } else if (!user) {
-        this.showInfo("")
-      }
-    })
   }
 
   signIn() {
     this.clearError()
+    this.setStatus("Opening Google sign-in…")
+
     const provider = new firebase.auth.GoogleAuthProvider()
-    firebase.auth().signInWithRedirect(provider)
-      .catch(error => this.showError(error.message))
+    firebase.auth().signInWithPopup(provider)
+      .then(result => {
+        this.setStatus("Signing in…")
+        return result.user.getIdToken()
+      })
+      .then(token => this.postToken(token))
+      .catch(error => {
+        if (error.code === "auth/popup-closed-by-user") {
+          this.setStatus("")
+        } else {
+          this.showError(`${error.code}: ${error.message}`)
+        }
+      })
   }
 
   postToken(token) {
@@ -60,14 +48,6 @@ export default class extends Controller {
       }
     })
     .catch(error => this.showError(`Network error: ${error.message}`))
-  }
-
-  showInfo(message) {
-    if (this.hasErrorTarget) {
-      this.errorTarget.style.color = "var(--color-muted)"
-      this.errorTarget.textContent = message
-      this.errorTarget.hidden = !message
-    }
   }
 
   showError(message) {
