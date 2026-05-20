@@ -5,23 +5,19 @@ export default class extends Controller {
   static targets = [ "error", "button" ]
 
   connect() {
-    // After Google redirects back to this page, pick up the result.
     if (typeof firebase === "undefined") {
-      this.showError("Firebase SDK failed to load. Check your connection.")
+      this.showError("Firebase SDK failed to load.")
       return
     }
+
     firebase.auth().getRedirectResult()
       .then(result => {
         if (result && result.user) {
-          this.setLoading(true)
+          this.setStatus("Signing in…")
           return result.user.getIdToken().then(token => this.postToken(token))
         }
       })
-      .catch(error => {
-        if (error.code !== "auth/no-current-user") {
-          this.showError(`${error.code}: ${error.message}`)
-        }
-      })
+      .catch(error => this.showError(`${error.code}: ${error.message}`))
   }
 
   signIn() {
@@ -35,25 +31,24 @@ export default class extends Controller {
     const csrf = document.querySelector('meta[name="csrf-token"]')?.content
     return fetch(this.sessionUrlValue, {
       method: "POST",
+      credentials: "same-origin",
       headers: { "Content-Type": "application/json", "X-CSRF-Token": csrf },
       body: JSON.stringify({ firebase_token: token })
     })
     .then(response => {
       if (response.ok) {
-        window.location.href = "/dashboard"
+        window.location.replace("/dashboard")
       } else {
         return response.json()
           .catch(() => ({}))
-          .then(body => {
-            this.setLoading(false)
-            this.showError(body.error || `Sign-in failed (${response.status})`)
-          })
+          .then(body => this.showError(body.error || `Server error ${response.status}`))
       }
     })
+    .catch(error => this.showError(`Network error: ${error.message}`))
   }
 
   showError(message) {
-    this.setLoading(false)
+    this.setStatus("")
     if (this.hasErrorTarget) {
       this.errorTarget.textContent = message
       this.errorTarget.hidden = false
@@ -67,10 +62,10 @@ export default class extends Controller {
     }
   }
 
-  setLoading(loading) {
+  setStatus(message) {
     if (this.hasButtonTarget) {
-      this.buttonTarget.disabled = loading
-      this.buttonTarget.textContent = loading ? "Signing in…" : "Sign in with Google"
+      this.buttonTarget.disabled = !!message
+      this.buttonTarget.textContent = message || "Sign in with Google"
     }
   }
 }
