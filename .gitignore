@@ -29,3 +29,7 @@
 !/tmp/storage/.keep
 
 /public/assets
+
+# Ignore sensitive credentials.
+/config/master.key
+/.kamal/secrets
