@@ -41,6 +41,7 @@ gem "thruster", require: false
 gem "image_processing", "~> 1.2"
 
 gem "firebase_id_token"   # Firebase Auth token verification
+gem "redis"               # Certificate cache for firebase_id_token
 gem "prawn"               # PDF generation for receipts
 gem "prawn-table"         # Table support in Prawn PDFs
 
