@@ -1,0 +1,34 @@
+<% if carpool_group.errors.any? %>
+  <div class="form-errors">
+    <ul>
+      <% carpool_group.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<div class="form-group">
+  <%= f.label :name, "Name" %>
+  <%= f.text_field :name, placeholder: "e.g. Morning Crew" %>
+</div>
+
+<div class="form-group">
+  <%= f.label :month, "Month" %>
+  <%= f.date_field :month %>
+</div>
+
+<div class="form-group">
+  <%= f.label :car_id, "Car" %>
+  <%= f.collection_select :car_id, @cars, :id, :name, { prompt: "Select a car" } %>
+</div>
+
+<div class="form-group">
+  <%= f.label :trip_id, "Trip" %>
+  <%= f.collection_select :trip_id, @trips, :id, :name, { prompt: "Select a trip" } %>
+</div>
+
+<div class="form-actions">
+  <%= f.submit "Save", class: "btn btn--primary" %>
+  <%= link_to "Cancel", admin_carpool_groups_path, class: "btn btn--ghost" %>
+</div>

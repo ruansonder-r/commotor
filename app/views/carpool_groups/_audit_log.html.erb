@@ -1,0 +1,19 @@
+<% logs = group.trip_logs.includes(:recorded_by).order(created_at: :desc) %>
+<% if logs.any? %>
+  <div class="audit-log">
+    <h3 class="audit-log__title">History</h3>
+    <ul class="audit-list">
+      <% logs.each do |log| %>
+        <li class="audit-entry">
+          <span class="audit-entry__badge <%= log.trip_count > 0 ? 'audit-entry__badge--add' : 'audit-entry__badge--remove' %>">
+            <%= log.trip_count > 0 ? "+" : "−" %>
+          </span>
+          <div class="audit-entry__detail">
+            <span class="audit-entry__who"><%= log.recorded_by&.display_name %></span>
+            <span class="audit-entry__time"><%= time_ago_in_words(log.created_at) %> ago</span>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>

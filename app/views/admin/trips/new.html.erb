@@ -1,0 +1,14 @@
+<% content_for :title, "Add Trip — Admin" %>
+<% content_for :header_title, "Admin" %>
+
+<%= render "admin/nav" %>
+
+<div class="admin-header">
+  <h2 class="admin-header__title">Add Trip</h2>
+</div>
+
+<div class="form-card">
+  <%= form_with model: [:admin, @trip] do |f| %>
+    <%= render "form", f: f, trip: @trip %>
+  <% end %>
+</div>

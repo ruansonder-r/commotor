@@ -1,0 +1,39 @@
+<% content_for :title, "Trips — Admin" %>
+<% content_for :header_title, "Admin" %>
+
+<%= render "admin/nav" %>
+
+<div class="admin-header">
+  <h2 class="admin-header__title">Trips</h2>
+  <%= link_to "Add Trip", new_admin_trip_path, class: "btn btn--primary btn--sm" %>
+</div>
+
+<% if @trips.any? %>
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Distance (km)</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @trips.each do |trip| %>
+        <tr>
+          <td><%= trip.name %></td>
+          <td><%= trip.distance_km %></td>
+          <td>
+            <div class="admin-table__actions">
+              <%= link_to "Edit", edit_admin_trip_path(trip), class: "btn btn--ghost btn--sm" %>
+              <%= button_to "Remove", admin_trip_path(trip), method: :delete,
+                    class: "btn btn--danger btn--sm",
+                    data: { turbo_confirm: "Remove #{trip.name}?" } %>
+            </div>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <div class="empty-state"><p>No trips yet.</p></div>
+<% end %>

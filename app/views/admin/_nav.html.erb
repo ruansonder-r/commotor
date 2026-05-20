@@ -1,0 +1,7 @@
+<nav class="admin-nav">
+  <%= link_to "Cars", admin_cars_path, class: "admin-nav__link #{controller_name == 'cars' ? 'admin-nav__link--active' : ''}" %>
+  <%= link_to "Trips", admin_trips_path, class: "admin-nav__link #{controller_name == 'trips' ? 'admin-nav__link--active' : ''}" %>
+  <%= link_to "Groups", admin_carpool_groups_path, class: "admin-nav__link #{controller_name == 'carpool_groups' ? 'admin-nav__link--active' : ''}" %>
+  <%= link_to "Members", admin_memberships_path, class: "admin-nav__link #{controller_name == 'memberships' ? 'admin-nav__link--active' : ''}" %>
+  <%= link_to "Users", admin_users_path, class: "admin-nav__link #{controller_name == 'users' ? 'admin-nav__link--active' : ''}" %>
+</nav>

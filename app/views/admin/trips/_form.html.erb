@@ -1,0 +1,24 @@
+<% if trip.errors.any? %>
+  <div class="form-errors">
+    <ul>
+      <% trip.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<div class="form-group">
+  <%= f.label :name, "Name" %>
+  <%= f.text_field :name, placeholder: "e.g. Office Commute" %>
+</div>
+
+<div class="form-group">
+  <%= f.label :distance_km, "Distance (km)" %>
+  <%= f.number_field :distance_km, step: "0.1", placeholder: "e.g. 12.5" %>
+</div>
+
+<div class="form-actions">
+  <%= f.submit "Save", class: "btn btn--primary" %>
+  <%= link_to "Cancel", admin_trips_path, class: "btn btn--ghost" %>
+</div>

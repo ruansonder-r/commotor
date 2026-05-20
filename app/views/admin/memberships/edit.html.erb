@@ -1,0 +1,14 @@
+<% content_for :title, "Edit Membership — Admin" %>
+<% content_for :header_title, "Admin" %>
+
+<%= render "admin/nav" %>
+
+<div class="admin-header">
+  <h2 class="admin-header__title">Edit Membership</h2>
+</div>
+
+<div class="form-card">
+  <%= form_with model: [:admin, @membership] do |f| %>
+    <%= render "form", f: f, membership: @membership %>
+  <% end %>
+</div>

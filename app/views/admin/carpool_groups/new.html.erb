@@ -1,0 +1,14 @@
+<% content_for :title, "Add Group — Admin" %>
+<% content_for :header_title, "Admin" %>
+
+<%= render "admin/nav" %>
+
+<div class="admin-header">
+  <h2 class="admin-header__title">Add Group</h2>
+</div>
+
+<div class="form-card">
+  <%= form_with model: [:admin, @carpool_group] do |f| %>
+    <%= render "form", f: f, carpool_group: @carpool_group %>
+  <% end %>
+</div>

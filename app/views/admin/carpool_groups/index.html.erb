@@ -1,0 +1,43 @@
+<% content_for :title, "Groups — Admin" %>
+<% content_for :header_title, "Admin" %>
+
+<%= render "admin/nav" %>
+
+<div class="admin-header">
+  <h2 class="admin-header__title">Carpool Groups</h2>
+  <%= link_to "Add Group", new_admin_carpool_group_path, class: "btn btn--primary btn--sm" %>
+</div>
+
+<% if @carpool_groups.any? %>
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Month</th>
+        <th>Car</th>
+        <th>Trip</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @carpool_groups.each do |group| %>
+        <tr>
+          <td><%= group.name %></td>
+          <td><%= group.month&.strftime("%B %Y") %></td>
+          <td><%= group.car.name %></td>
+          <td><%= group.trip.name %></td>
+          <td>
+            <div class="admin-table__actions">
+              <%= link_to "Edit", edit_admin_carpool_group_path(group), class: "btn btn--ghost btn--sm" %>
+              <%= button_to "Remove", admin_carpool_group_path(group), method: :delete,
+                    class: "btn btn--danger btn--sm",
+                    data: { turbo_confirm: "Remove #{group.name}? This will also remove all members and trip logs." } %>
+            </div>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <div class="empty-state"><p>No groups yet.</p></div>
+<% end %>

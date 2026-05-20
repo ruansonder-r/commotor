@@ -1,0 +1,41 @@
+<% content_for :title, "Members — Admin" %>
+<% content_for :header_title, "Admin" %>
+
+<%= render "admin/nav" %>
+
+<div class="admin-header">
+  <h2 class="admin-header__title">Members</h2>
+  <%= link_to "Add Member", new_admin_membership_path, class: "btn btn--primary btn--sm" %>
+</div>
+
+<% if @memberships.any? %>
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Group</th>
+        <th class="text-right">Split</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @memberships.each do |m| %>
+        <tr>
+          <td><%= m.user.display_name %></td>
+          <td><%= m.carpool_group.name %></td>
+          <td class="text-right"><%= "%.0f%%" % (m.cost_split_percentage * 100) %></td>
+          <td>
+            <div class="admin-table__actions">
+              <%= link_to "Edit", edit_admin_membership_path(m), class: "btn btn--ghost btn--sm" %>
+              <%= button_to "Remove", admin_membership_path(m), method: :delete,
+                    class: "btn btn--danger btn--sm",
+                    data: { turbo_confirm: "Remove #{m.user.display_name} from #{m.carpool_group.name}?" } %>
+            </div>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <div class="empty-state"><p>No members yet.</p></div>
+<% end %>

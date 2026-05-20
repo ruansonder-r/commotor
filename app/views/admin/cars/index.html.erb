@@ -1,0 +1,39 @@
+<% content_for :title, "Cars — Admin" %>
+<% content_for :header_title, "Admin" %>
+
+<%= render "admin/nav" %>
+
+<div class="admin-header">
+  <h2 class="admin-header__title">Cars</h2>
+  <%= link_to "Add Car", new_admin_car_path, class: "btn btn--primary btn--sm" %>
+</div>
+
+<% if @cars.any? %>
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Cost / km</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @cars.each do |car| %>
+        <tr>
+          <td><%= car.name %></td>
+          <td>R<%= "%.2f" % car.cost_per_km %></td>
+          <td>
+            <div class="admin-table__actions">
+              <%= link_to "Edit", edit_admin_car_path(car), class: "btn btn--ghost btn--sm" %>
+              <%= button_to "Remove", admin_car_path(car), method: :delete,
+                    class: "btn btn--danger btn--sm",
+                    data: { turbo_confirm: "Remove #{car.name}?" } %>
+            </div>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <div class="empty-state"><p>No cars yet.</p></div>
+<% end %>
