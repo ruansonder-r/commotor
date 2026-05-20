@@ -3,16 +3,7 @@
 <% content_for :head do %>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-  <script>
-    firebase.initializeApp({
-      apiKey: "AIzaSyC_F7XeyvrWsv4d7adDAV8UTEYFH35AzoI",
-      authDomain: "commoter.firebaseapp.com",
-      projectId: "commoter",
-      storageBucket: "commoter.firebasestorage.app",
-      messagingSenderId: "10058955904",
-      appId: "1:10058955904:web:179c0e2cfc3506df7cfa65"
-    });
-  </script>
+  <script>firebase.initializeApp(<%= firebase_web_config_json.html_safe %>);</script>
 <% end %>
 
 <div class="login-page">
