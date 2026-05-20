@@ -6,6 +6,10 @@ export default class extends Controller {
 
   connect() {
     // After Google redirects back to this page, pick up the result.
+    if (typeof firebase === "undefined") {
+      this.showError("Firebase SDK failed to load. Check your connection.")
+      return
+    }
     firebase.auth().getRedirectResult()
       .then(result => {
         if (result && result.user) {
@@ -13,13 +17,18 @@ export default class extends Controller {
           return result.user.getIdToken().then(token => this.postToken(token))
         }
       })
-      .catch(error => this.showError(error.message))
+      .catch(error => {
+        if (error.code !== "auth/no-current-user") {
+          this.showError(`${error.code}: ${error.message}`)
+        }
+      })
   }
 
   signIn() {
     this.clearError()
     const provider = new firebase.auth.GoogleAuthProvider()
     firebase.auth().signInWithRedirect(provider)
+      .catch(error => this.showError(error.message))
   }
 
   postToken(token) {
