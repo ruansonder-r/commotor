@@ -19,6 +19,19 @@
   --shadow-md:        0 4px 12px rgba(0,0,0,.15);
 }
 
+[data-theme="dark"] {
+  --color-primary:    #4a9eff;
+  --color-primary-dk: #2979e8;
+  --color-danger:     #ff6b6b;
+  --color-surface:    #1e1e2e;
+  --color-bg:         #13131f;
+  --color-border:     #2e2e42;
+  --color-text:       #e4e4f0;
+  --color-muted:      #8888aa;
+  --shadow-sm:        0 1px 3px rgba(0,0,0,.4);
+  --shadow-md:        0 4px 12px rgba(0,0,0,.5);
+}
+
 html { font-size: 16px; }
 
 body {
@@ -44,7 +57,25 @@ a { color: var(--color-primary); text-decoration: none; }
   z-index: 10;
 }
 
-.app-header__title { font-size: 18px; font-weight: 600; }
+.app-header__title { font-size: 18px; font-weight: 600; display: flex; align-items: center; }
+
+.app-header__logo { color: var(--color-text); display: flex; align-items: center; }
+.app-header__logo:hover { color: var(--color-primary); }
+
+.app-header__actions { display: flex; align-items: center; gap: 4px; }
+
+.app-header__theme-toggle {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 8px;
+  line-height: 1;
+  border-radius: 50%;
+  transition: background 0.15s;
+}
+
+.app-header__theme-toggle:hover { background: var(--color-border); }
 
 .app-header__signout {
   background: none;

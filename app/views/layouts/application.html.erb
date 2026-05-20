@@ -15,19 +15,30 @@
     <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
 
     <link rel="icon" href="/icon.png" type="image/png">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="icon" href="<%= asset_path 'racing.svg' %>" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
     <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
+    <script>
+      (function() {
+        var t = localStorage.getItem("theme") || "light";
+        document.documentElement.setAttribute("data-theme", t);
+      })();
+    </script>
   </head>
 
-  <body>
+  <body data-controller="theme">
     <% if current_user %>
       <header class="app-header">
-        <span class="app-header__title"><%= content_for(:header_title) || "Commoter" %></span>
-        <%= button_to "Sign out", session_path, method: :delete, class: "app-header__signout" %>
+        <span class="app-header__title">
+          <%= render "layouts/car_logo" %>
+        </span>
+        <div class="app-header__actions">
+          <button data-action="theme#toggle" data-theme-target="toggle" class="app-header__theme-toggle">☾</button>
+          <%= button_to "Sign out", session_path, method: :delete, class: "app-header__signout" %>
+        </div>
       </header>
     <% end %>
 
@@ -45,10 +56,10 @@
     <% if current_user %>
       <nav class="tab-bar">
         <%= link_to root_path, class: "tab-bar__tab #{request.path.start_with?('/admin') ? '' : 'tab-bar__tab--active'}" do %>
-          My Groups
+          My Commutes
         <% end %>
         <%= link_to admin_root_path, class: "tab-bar__tab #{request.path.start_with?('/admin') ? 'tab-bar__tab--active' : ''}" do %>
-          Admin
+          Config Stuff
         <% end %>
       </nav>
     <% end %>
