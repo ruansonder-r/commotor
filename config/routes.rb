@@ -6,7 +6,11 @@ Rails.application.routes.draw do
   get "dashboard", to: "dashboard#index", as: :dashboard
 
   resources :carpool_groups, only: [ :show ] do
-    resources :trip_logs, only: [ :create ]
+    resources :trip_logs, only: [ :create ] do
+      collection do
+        post :decrement
+      end
+    end
     resource :receipt, only: [ :show ]
   end
 

@@ -3,3 +3,9 @@
     <%= render "carpool_groups/tally", group: @group, memberships: @memberships %>
   <% end %>
 <% end %>
+
+<%= turbo_stream.replace dom_id(@group, :audit) do %>
+  <%= turbo_frame_tag dom_id(@group, :audit) do %>
+    <%= render "carpool_groups/audit_log", group: @group %>
+  <% end %>
+<% end %>

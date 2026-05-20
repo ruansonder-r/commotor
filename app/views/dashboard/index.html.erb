@@ -9,7 +9,7 @@
               carpool_group_trip_logs_path(group),
               method: :post,
               class: "group-card__tally-btn",
-              data: { bridge_component: "floating-action-button" } %>
+              data: { bridge_component: "floating-action-button", turbo: false } %>
         <%= link_to carpool_group_path(group), class: "group-card__link" do %>
           <div class="group-card__body">
             <span class="group-card__name"><%= group.name %></span>

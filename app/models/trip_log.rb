@@ -3,7 +3,7 @@ class TripLog < ApplicationRecord
   belongs_to :recorded_by, class_name: "User", foreign_key: :recorded_by_user_id
 
   validates :occurred_at, presence: true
-  validates :trip_count, numericality: { only_integer: true, greater_than: 0 }
+  validates :trip_count, numericality: { only_integer: true, other_than: 0 }
   validate :group_splits_are_complete
 
   before_validation :set_defaults

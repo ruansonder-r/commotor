@@ -14,10 +14,25 @@
     <%= render "tally", group: @group, memberships: @memberships %>
   <% end %>
 
+  <div class="trip-controls">
+    <%= button_to "−",
+          decrement_carpool_group_trip_logs_path(@group),
+          method: :post,
+          class: "trip-controls__btn trip-controls__btn--remove" %>
+    <%= button_to "+",
+          carpool_group_trip_logs_path(@group),
+          method: :post,
+          class: "trip-controls__btn trip-controls__btn--add" %>
+  </div>
+
   <div class="group-actions">
     <%= link_to "Export Receipt",
                 carpool_group_receipt_path(@group),
                 class: "btn btn--secondary",
                 data: { bridge_component: "open-external-url" } %>
   </div>
+
+  <%= turbo_frame_tag dom_id(@group, :audit) do %>
+    <%= render "audit_log", group: @group %>
+  <% end %>
 </div>
