@@ -1,9 +1,9 @@
 class SessionsController < ApplicationController
   skip_before_action :authenticate_user!, only: [ :new, :create ]
 
-  # Skip CSRF for the token POST — the request comes from the native Android layer,
-  # not from a form in a browser session.
-  protect_from_forgery with: :null_session, only: [ :create ]
+  # Skip CSRF for the token POST entirely — the Firebase ID token is already a
+  # signed JWT that proves identity, so CSRF protection is redundant here.
+  skip_before_action :verify_authenticity_token, only: [ :create ]
 
   def new
   end

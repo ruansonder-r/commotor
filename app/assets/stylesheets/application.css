@@ -107,6 +107,13 @@ a { color: var(--color-primary); text-decoration: none; }
 
 .btn-google-signin:hover { background: #f8f9fa; }
 
+.login-error {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--color-danger);
+  text-align: center;
+}
+
 /* ─── Group List (Dashboard) ────────────────────────────────────── */
 .group-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
 

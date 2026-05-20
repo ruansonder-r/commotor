@@ -20,13 +20,15 @@
     <h1 class="login-card__app-name">Commoter</h1>
     <p class="login-card__tagline">Track your carpool costs</p>
 
-    <button class="btn-google-signin"
-            data-controller="firebase-auth"
-            data-action="click->firebase-auth#signIn"
-            data-firebase-auth-session-url-value="<%= session_path %>"
-            data-bridge-component="google-sign-in"
-            data-bridge-destination="<%= session_path %>">
-      Sign in with Google
-    </button>
+    <div data-controller="firebase-auth"
+         data-firebase-auth-session-url-value="<%= session_path %>">
+      <button class="btn-google-signin"
+              data-action="click->firebase-auth#signIn"
+              data-bridge-component="google-sign-in"
+              data-bridge-destination="<%= session_path %>">
+        Sign in with Google
+      </button>
+      <p class="login-error" data-firebase-auth-target="error" hidden></p>
+    </div>
   </div>
 </div>
