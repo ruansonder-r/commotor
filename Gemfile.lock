@@ -222,6 +222,11 @@ GEM
       ast (~> 2.4.1)
       racc
     pdf-core (0.9.0)
+    pg (1.6.3)
+    pg (1.6.3-aarch64-linux)
+    pg (1.6.3-aarch64-linux-musl)
+    pg (1.6.3-x86_64-linux)
+    pg (1.6.3-x86_64-linux-musl)
     pp (0.6.3)
       prettyprint
     prawn (2.4.0)
@@ -417,6 +422,7 @@ DEPENDENCIES
   importmap-rails
   jbuilder
   kamal
+  pg (~> 1.5)
   prawn
   prawn-table
   propshaft

@@ -33,3 +33,6 @@
 # Ignore sensitive credentials.
 /config/master.key
 /.kamal/secrets
+
+# Ignore Claude Code local config and worktrees.
+/.claude

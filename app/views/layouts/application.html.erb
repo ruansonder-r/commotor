@@ -41,5 +41,16 @@
     <main class="main-content">
       <%= yield %>
     </main>
+
+    <% if current_user %>
+      <nav class="tab-bar">
+        <%= link_to root_path, class: "tab-bar__tab #{request.path.start_with?('/admin') ? '' : 'tab-bar__tab--active'}" do %>
+          My Groups
+        <% end %>
+        <%= link_to admin_root_path, class: "tab-bar__tab #{request.path.start_with?('/admin') ? 'tab-bar__tab--active' : ''}" do %>
+          Admin
+        <% end %>
+      </nav>
+    <% end %>
   </body>
 </html>

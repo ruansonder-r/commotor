@@ -21,13 +21,3 @@
                 data: { bridge_component: "open-external-url" } %>
   </div>
 </div>
-
-<%# FAB — the Android bridge can upgrade this to a native FAB; works as a plain button on web %>
-<div class="fab-container">
-  <%= button_to "+",
-                carpool_group_trip_logs_path(@group),
-                method: :post,
-                class: "fab",
-                data: { bridge_component: "floating-action-button",
-                        turbo_stream: true } %>
-</div>

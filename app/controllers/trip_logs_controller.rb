@@ -5,14 +5,10 @@ class TripLogsController < ApplicationController
     @trip_log = @group.trip_logs.build(recorded_by: current_user)
 
     if @trip_log.save
-      @memberships = @group.memberships.includes(:user)
-      respond_to do |format|
-        format.turbo_stream
-        format.html { redirect_to carpool_group_path(@group) }
-      end
+      redirect_back fallback_location: dashboard_path
     else
-      redirect_to carpool_group_path(@group),
-                  alert: @trip_log.errors.full_messages.to_sentence
+      redirect_back fallback_location: dashboard_path,
+                    alert: @trip_log.errors.full_messages.to_sentence
     end
   end
 

@@ -5,12 +5,18 @@
   <ul class="group-list">
     <% @carpool_groups.each do |group| %>
       <li class="group-card">
+        <%= button_to "+",
+              carpool_group_trip_logs_path(group),
+              method: :post,
+              class: "group-card__tally-btn",
+              data: { bridge_component: "floating-action-button" } %>
         <%= link_to carpool_group_path(group), class: "group-card__link" do %>
           <div class="group-card__body">
             <span class="group-card__name"><%= group.name %></span>
             <span class="group-card__meta"><%= group.month.strftime("%B %Y") %></span>
             <span class="group-card__meta"><%= group.car.name %> &middot; <%= group.trip.name %></span>
           </div>
+          <span class="group-card__count"><%= group.trip_logs.sum(:trip_count) %></span>
           <span class="group-card__chevron">›</span>
         <% end %>
       </li>

@@ -10,5 +10,14 @@ Rails.application.routes.draw do
     resource :receipt, only: [ :show ]
   end
 
+  namespace :admin do
+    root "cars#index"
+    resources :cars
+    resources :trips
+    resources :carpool_groups
+    resources :memberships
+    resources :users, only: [ :index ]
+  end
+
   root "dashboard#index"
 end
