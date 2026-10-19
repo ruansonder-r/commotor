@@ -54,12 +54,18 @@ The project is already linked: **`ruansonderrs-projects/commoter`**, connected
 to the `ruansonder-r/commotor` GitHub repo, with the function pinned to `fra1`
 (see `vercel.json`) to sit next to the database.
 
+It will serve at **<https://commute.ruansonder-r.com>**.
+
 Already done:
 
 - [x] `vercel link` — project created and linked
 - [x] `APP_ENV=production` set on production and preview
 - [x] `SESSION_SECRET` set on production and preview (a different secret each,
       so a preview deploy cannot mint a production session)
+- [x] `commute.ruansonder-r.com` attached and DNS-verified. The domain is
+      registered with Vercel on Vercel nameservers and already has a wildcard
+      ALIAS, so no record needed adding and the certificate is automatic. The
+      apex and `www` stay on `photo-portfolio-host-19ab`, untouched.
 
 ### Remaining steps
 
@@ -119,16 +125,17 @@ vercel deploy --prod
 ```
 
 **5. Authorise the domain in Firebase.** In the console under
-**Authentication → Settings → Authorized domains**, add the Vercel domain.
-Until you do, Google sign-in fails with `auth/unauthorized-domain` — the single
-most common first-deploy failure.
+**Authentication → Settings → Authorized domains**, add
+`commute.ruansonder-r.com`. Until you do, Google sign-in fails with
+`auth/unauthorized-domain` — the single most common first-deploy failure. Add
+the `*.vercel.app` preview domain too if you want sign-in working on previews.
 
 ### A note on the GitHub connection
 
 Linking connected the repo, so Vercel now builds on push: a push to any branch
-creates a preview deployment, and a push to the production branch deploys to
-production. Nothing has been pushed yet. Finish steps 1–3 before pushing, or
-the first preview will come up without a database.
+creates a preview deployment, and a push to `master` deploys to production at
+`commute.ruansonder-r.com`. Nothing has been pushed yet — finish steps 1–3
+first, or the domain will go live pointing at an app with no database.
 
 ---
 
