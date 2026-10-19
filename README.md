@@ -101,20 +101,16 @@ DATABASE_URL="<DATABASE_URL_UNPOOLED value>" .venv/bin/alembic upgrade head
 pooled URL — Neon's PgBouncer supports protocol-level prepared statements, so
 psycopg3 needs no `prepare_threshold` workaround.)
 
-### Remaining steps
+**Deployed and live at <https://commute.ruansonder-r.com>.**
 
-**1. Authorise the domain in Firebase.** In the console under
+### Remaining step
+
+**Authorise the domain in Firebase.** In the console under
 **Authentication → Settings → Authorized domains**, add
 `commute.ruansonder-r.com`. Until you do, Google sign-in fails with
 `auth/unauthorized-domain` — the single most common first-deploy failure.
 
-**2. Deploy:**
-
-```bash
-vercel deploy --prod      # or push master, which deploys automatically
-```
-
-**3. Sign in once**, then add a car, trip, group and memberships under
+Everything else is done. After that, sign in once, then add a car, trip, group and memberships under
 `/admin`. Splits must total 100% before trips can be logged. `scripts/seed.py`
 can pre-fill a car/trip/group if you would rather start from the old seed data.
 

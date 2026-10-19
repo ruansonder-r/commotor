@@ -50,10 +50,24 @@ survives Turbo body swaps). There is no bundler, no npm, no Stimulus.
 
 ### Deployment shape
 
-`api/index.py` imports the app; `vercel.json` rewrites `/(.*)` to it. Vercel
-checks the filesystem before rewrites, so everything in `public/` is served by
-the CDN and never reaches the function. Put static assets there, not in
-`commoter/`.
+`api/index.py` imports the app. Vercel detects FastAPI and routes every request
+to it with the original path; `public/` is served by the CDN and never reaches
+the function, so static assets go there, not in `commoter/`.
+
+Two traps, both of which produced a green build and a dead site:
+
+- **Dependencies live in `pyproject.toml`, not `requirements.txt`.** Vercel runs
+  `uv` against `pyproject.toml` and ignores `requirements.txt` when it exists. A
+  pyproject carrying only tool config installs nothing, builds in ~1s, and then
+  fails every request with `ModuleNotFoundError`. `requirements.txt` is kept for
+  plain pip; `tests/test_packaging.py` fails if the two drift.
+- **Do not add a catch-all rewrite to the entrypoint.** Vercel now passes the
+  *rewritten* path to the app, so `/(.*)` → `/api/index` makes FastAPI see
+  `/api/index` on every request and render the 404 page. There is a test for
+  this too.
+
+A build finishing suspiciously fast is the signal for the first; a site that
+serves its own styled 404 on every route is the signal for the second.
 
 Functions are ephemeral: **never run migrations at boot.** Run
 `alembic upgrade head` from a developer machine against `DATABASE_URL_UNPOOLED`
