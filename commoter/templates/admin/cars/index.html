@@ -1,0 +1,32 @@
+{% extends "layouts/application.html" %}
+{% block title %}Cars &mdash; Admin{% endblock %}
+{% block content %}
+{% include "admin/_nav.html" %}
+<div class="admin-header">
+  <h2 class="admin-header__title">Cars</h2>
+  <a href="/admin/cars/new" class="btn btn--primary btn--sm">Add Car</a>
+</div>
+{% if records %}
+  <table class="admin-table">
+    <thead><tr><th>Name</th><th>Cost / km</th><th></th></tr></thead>
+    <tbody>
+      {% for car in records %}
+        <tr>
+          <td>{{ car.name }}</td>
+          <td>R{{ car.cost_per_km|money }}</td>
+          <td>
+            <div class="admin-table__actions">
+              <a href="/admin/cars/{{ car.id }}/edit" class="btn btn--ghost btn--sm">Edit</a>
+              {% with action = "/admin/cars/" ~ car.id ~ "/delete", confirm = "Remove " ~ car.name ~ "?" %}
+                {% include "admin/_delete_button.html" %}
+              {% endwith %}
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <div class="empty-state"><p>No cars yet.</p></div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "layouts/application.html" %}
+{% block title %}{{ heading }} &mdash; Admin{% endblock %}
+{% block content %}
+{% include "admin/_nav.html" %}
+<div class="admin-header"><h2 class="admin-header__title">{{ heading }}</h2></div>
+<div class="form-card">
+  <form method="post" action="{{ action }}">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    {% include "admin/_errors.html" %}
+    <div class="form-group">
+      <label for="car_name">Name</label>
+      <input type="text" id="car_name" name="name" value="{{ values.name or '' }}" placeholder="e.g. Toyota Corolla">
+    </div>
+    <div class="form-group">
+      <label for="car_cost">Cost per km (R)</label>
+      <input type="number" step="0.01" id="car_cost" name="cost_per_km" value="{{ values.cost_per_km|trim if values.cost_per_km else '' }}" placeholder="e.g. 4.50">
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn--primary">Save</button>
+      <a href="/admin/cars" class="btn btn--ghost">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

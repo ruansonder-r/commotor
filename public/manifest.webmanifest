@@ -1,0 +1,16 @@
+{
+  "name": "Commoter",
+  "short_name": "Commoter",
+  "description": "Track shared carpool trips and split the cost.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f1f3f4",
+  "theme_color": "#1a73e8",
+  "icons": [
+    { "src": "/icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/assets/racing.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

@@ -1,0 +1,18 @@
+{% if group.trip_logs %}
+  <div class="audit-log">
+    <h3 class="audit-log__title">History</h3>
+    <ul class="audit-list">
+      {% for log in group.trip_logs %}
+        <li class="audit-entry">
+          <span class="audit-entry__badge {% if log.trip_count > 0 %}audit-entry__badge--add{% else %}audit-entry__badge--remove{% endif %}">
+            {% if log.trip_count > 0 %}+{% else %}&minus;{% endif %}
+          </span>
+          <div class="audit-entry__detail">
+            <span class="audit-entry__who">{{ log.recorded_by.display_name if log.recorded_by else "" }}</span>
+            <span class="audit-entry__time">{{ log.created_at|time_ago }} ago</span>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}

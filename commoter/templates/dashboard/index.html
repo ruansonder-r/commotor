@@ -1,0 +1,33 @@
+{% extends "layouts/application.html" %}
+{% block title %}My Groups &mdash; Commoter{% endblock %}
+
+{% block content %}
+{% if groups %}
+  <ul class="group-list">
+    {% for group in groups %}
+      <li class="group-card">
+        {# data-turbo="false" so the + does a plain post+redirect and the list
+           re-renders with the new count, matching the old behaviour. #}
+        <form class="button_to" method="post" data-turbo="false"
+              action="/carpool_groups/{{ group.id }}/trip_logs">
+          <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+          <button class="group-card__tally-btn" type="submit" aria-label="Log a trip for {{ group.name }}">+</button>
+        </form>
+        <a href="/carpool_groups/{{ group.id }}" class="group-card__link">
+          <div class="group-card__body">
+            <span class="group-card__name">{{ group.name }}</span>
+            <span class="group-card__meta">{{ group.month|month_label }}</span>
+            <span class="group-card__meta">{{ group.car.name }} &middot; {{ group.trip.name }}</span>
+          </div>
+          <span class="group-card__count">{{ group.total_trips }}</span>
+          <span class="group-card__chevron">&rsaquo;</span>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <div class="empty-state">
+    <p>You are not a member of any carpool groups yet.</p>
+  </div>
+{% endif %}
+{% endblock %}

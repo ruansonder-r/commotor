@@ -1,0 +1,24 @@
+{% extends "layouts/application.html" %}
+{% block title %}{{ heading }} &mdash; Admin{% endblock %}
+{% block content %}
+{% include "admin/_nav.html" %}
+<div class="admin-header"><h2 class="admin-header__title">{{ heading }}</h2></div>
+<div class="form-card">
+  <form method="post" action="{{ action }}">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    {% include "admin/_errors.html" %}
+    <div class="form-group">
+      <label for="trip_name">Name</label>
+      <input type="text" id="trip_name" name="name" value="{{ values.name or '' }}" placeholder="e.g. Morning Commute">
+    </div>
+    <div class="form-group">
+      <label for="trip_distance">Distance (km)</label>
+      <input type="number" step="0.1" id="trip_distance" name="distance_km" value="{{ values.distance_km|trim if values.distance_km else '' }}" placeholder="e.g. 40">
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn--primary">Save</button>
+      <a href="/admin/trips" class="btn btn--ghost">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

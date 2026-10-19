@@ -1,0 +1,28 @@
+{% extends "layouts/application.html" %}
+{% block title %}Sign in &mdash; Commoter{% endblock %}
+
+{% block head %}
+  {# Firebase restores auth state on a full load; a cached Turbo visit would
+     leave the SDK uninitialised, so force a real reload onto this page. #}
+  <meta name="turbo-visit-control" content="reload">
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script>
+    window.firebaseConfig = {{ firebase_web_config|safe }};
+    if (window.firebase && !firebase.apps.length) {
+      firebase.initializeApp(window.firebaseConfig);
+    }
+  </script>
+{% endblock %}
+
+{% block content %}
+<div class="login-page">
+  <img src="/assets/racing.svg" class="login-page__logo" alt="Commoter">
+  <div data-firebase-auth data-session-url="/session">
+    <button class="btn-google-signin" type="button" data-firebase-auth-button>
+      Sign in with Google
+    </button>
+    <p class="login-error" data-firebase-auth-error hidden></p>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "layouts/application.html" %}
+{% block title %}{{ group.name }} &mdash; Commoter{% endblock %}
+
+{% block content %}
+<div class="group-detail">
+  <div class="group-meta">
+    <span class="group-meta__item">{{ group.month|month_label }}</span>
+    <span class="group-meta__sep">&middot;</span>
+    <span class="group-meta__item">{{ group.car.name }} (R{{ group.car.cost_per_km|trim }}/km)</span>
+    <span class="group-meta__sep">&middot;</span>
+    <span class="group-meta__item">{{ group.trip.name }} ({{ group.trip.distance_km|trim }} km)</span>
+  </div>
+
+  <turbo-frame id="tally_carpool_group_{{ group.id }}">
+    {% include "carpool_groups/_tally.html" %}
+  </turbo-frame>
+
+  <div class="trip-controls">
+    <form class="button_to" method="post"
+          action="/carpool_groups/{{ group.id }}/trip_logs/decrement">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <button class="trip-controls__btn trip-controls__btn--remove" type="submit" aria-label="Remove a trip">&minus;</button>
+    </form>
+    <form class="button_to" method="post"
+          action="/carpool_groups/{{ group.id }}/trip_logs">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <button class="trip-controls__btn trip-controls__btn--add" type="submit" aria-label="Log a trip">+</button>
+    </form>
+  </div>
+
+  <div class="group-actions">
+    <a href="/carpool_groups/{{ group.id }}/receipt" class="btn btn--secondary" download>Export Receipt</a>
+  </div>
+
+  <turbo-frame id="audit_carpool_group_{{ group.id }}">
+    {% include "carpool_groups/_audit_log.html" %}
+  </turbo-frame>
+</div>
+{% endblock %}

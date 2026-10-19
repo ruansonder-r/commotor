@@ -1,0 +1,10 @@
+{% extends "layouts/application.html" %}
+{% block title %}Couldn&rsquo;t save &mdash; Commoter{% endblock %}
+{% block content %}
+<div class="form-errors">
+  <ul>
+    {% for message in messages %}<li>{{ message }}</li>{% endfor %}
+  </ul>
+</div>
+<p><a href="/" class="btn btn--ghost">Back to my commutes</a></p>
+{% endblock %}

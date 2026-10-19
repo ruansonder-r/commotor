@@ -1,0 +1,26 @@
+{% extends "layouts/application.html" %}
+{% block title %}Users &mdash; Admin{% endblock %}
+{% block content %}
+{% include "admin/_nav.html" %}
+<div class="admin-header"><h2 class="admin-header__title">Users</h2></div>
+{% if records %}
+  <table class="admin-table">
+    <thead><tr><th>Name</th><th>Email</th><th>Admin</th></tr></thead>
+    <tbody>
+      {% for user in records %}
+        <tr>
+          <td>{{ user.display_name }}</td>
+          <td>{{ user.email }}</td>
+          <td>{% if user.is_admin %}Yes{% else %}&mdash;{% endif %}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="admin-hint">
+    Admins are granted by listing their email in the <code>ADMIN_EMAILS</code>
+    environment variable; the flag is applied on their next sign-in.
+  </p>
+{% else %}
+  <div class="empty-state"><p>No users yet.</p></div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,31 @@
+<div class="tally">
+  <div class="tally__summary">
+    <div class="tally__stat">
+      <span class="tally__label">Total trips</span>
+      <span class="tally__value">{{ group.total_trips }}</span>
+    </div>
+    <div class="tally__stat">
+      <span class="tally__label">Total cost</span>
+      <span class="tally__value tally__value--highlight">R{{ group.monthly_tally|money }}</span>
+    </div>
+  </div>
+
+  <table class="members-table">
+    <thead>
+      <tr>
+        <th>Member</th>
+        <th class="text-right">Share</th>
+        <th class="text-right">Owes</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for membership in group.memberships %}
+        <tr>
+          <td>{{ membership.user.display_name }}</td>
+          <td class="text-right">{{ membership.cost_split_percentage|percent }}%</td>
+          <td class="text-right">R{{ membership.amount_owed|money }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

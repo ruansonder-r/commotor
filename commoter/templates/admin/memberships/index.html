@@ -1,0 +1,37 @@
+{% extends "layouts/application.html" %}
+{% block title %}Members &mdash; Admin{% endblock %}
+{% block content %}
+{% include "admin/_nav.html" %}
+<div class="admin-header">
+  <h2 class="admin-header__title">Members</h2>
+  <a href="/admin/memberships/new" class="btn btn--primary btn--sm">Add Member</a>
+</div>
+{% if records %}
+  <table class="admin-table">
+    <thead><tr><th>User</th><th>Group</th><th class="text-right">Split</th><th></th></tr></thead>
+    <tbody>
+      {% for membership in records %}
+        <tr>
+          <td>{{ membership.user.display_name }}</td>
+          <td>{{ membership.carpool_group.name }}</td>
+          <td class="text-right">{{ membership.cost_split_percentage|percent }}%</td>
+          <td>
+            <div class="admin-table__actions">
+              <a href="/admin/memberships/{{ membership.id }}/edit" class="btn btn--ghost btn--sm">Edit</a>
+              {% with action = "/admin/memberships/" ~ membership.id ~ "/delete",
+                      confirm = "Remove " ~ membership.user.display_name ~ " from " ~ membership.carpool_group.name ~ "?" %}
+                {% include "admin/_delete_button.html" %}
+              {% endwith %}
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="admin-hint">
+    Splits for a group must add up to exactly 100% before trips can be logged against it.
+  </p>
+{% else %}
+  <div class="empty-state"><p>No members yet.</p></div>
+{% endif %}
+{% endblock %}
