@@ -9,6 +9,7 @@ failure mode impossible to reintroduce quietly.
 
 from __future__ import annotations
 
+import json
 import tomllib
 from pathlib import Path
 
@@ -76,3 +77,22 @@ def test_every_imported_third_party_package_is_declared():
                 f"commoter imports `{module}` but `{distribution}` is not in "
                 f"pyproject.toml's dependencies"
             )
+
+
+def test_vercel_json_has_no_catch_all_rewrite_to_the_entrypoint():
+    """Vercel detects FastAPI natively and routes with the original path.
+
+    A catch-all rewrite to the entrypoint made it hand the app the *rewritten*
+    path instead, so every request arrived as `/api/index`, matched no route,
+    and rendered the 404 page on an otherwise healthy deployment.
+    """
+    config = json.loads((ROOT / "vercel.json").read_text())
+    for rewrite in config.get("rewrites", []):
+        assert not (
+            rewrite.get("source", "").strip("/") in ("(.*)", ":path*", "(.*)/")
+            and "api/index" in rewrite.get("destination", "")
+        ), (
+            "A catch-all rewrite to api/index makes FastAPI see `/api/index` "
+            "for every request. Vercel routes to the detected entrypoint on "
+            "its own; the rewrite is not needed."
+        )
