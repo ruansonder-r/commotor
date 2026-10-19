@@ -56,8 +56,10 @@ the CDN and never reaches the function. Put static assets there, not in
 `commoter/`.
 
 Functions are ephemeral: **never run migrations at boot.** Run
-`alembic upgrade head` from a developer machine against the direct (unpooled)
-database URL. The app connects with the pooled URL and `NullPool`.
+`alembic upgrade head` from a developer machine against `DATABASE_URL_UNPOOLED`
+(the Neon integration sets both URLs; the direct one has no `-pooler` in the
+host). The app itself reads `DATABASE_URL` — the pooled one — with `NullPool`,
+leaving pooling to Neon's PgBouncer.
 
 ### Authentication
 

@@ -67,68 +67,66 @@ Already done:
       ALIAS, so no record needed adding and the certificate is automatic. The
       apex and `www` stay on `photo-portfolio-host-19ab`, untouched.
 
-### Remaining steps
+- [x] Neon provisioned (`commoter-db`, free plan, `eu-central-1` — matching the
+      `fra1` function region so queries do not cross a continent)
+- [x] Firebase values set on production
+- [x] `alembic upgrade head` applied to Neon
 
-**1. Accept the Neon marketplace terms** (one-off, needs a browser — a legal
-acceptance nobody can click on your behalf):
+### Connection strings
 
-<https://vercel.com/ruansonderrs-projects/~/integrations/accept-terms/neon>
+The Neon integration sets **both** URLs for you — there is nothing to look up in
+the Neon console:
 
-Then provision the database:
+| Variable | Host | Use it for |
+|---|---|---|
+| `DATABASE_URL` | `...-pooler...` | the app (what `db.py` reads) |
+| `DATABASE_URL_UNPOOLED` | no `-pooler` | migrations, `pg_dump`, replication |
 
-```bash
-vercel integration add neon \
-  --plan free_v3 --name commoter-db \
-  -m region=fra1 -m auth=false -m realtime=false \
-  -e production -e preview --no-env-pull
-```
-
-`auth=false` because sign-in is Firebase's job, and `region=fra1` to match
-`regions` in `vercel.json`. If you move the database, move the function too.
-This sets `DATABASE_URL` automatically.
-
-**2. Add the Firebase values.** These are not recoverable from this repo — the
-Rails credentials were encrypted and `config/master.key` was never on this
-machine. Get them from the Firebase console under
-**Project settings → Your apps → Web app**:
-
-```bash
-vercel env add FIREBASE_PROJECT_ID production
-vercel env add FIREBASE_WEB_API_KEY production
-vercel env add FIREBASE_WEB_AUTH_DOMAIN production
-vercel env add FIREBASE_WEB_APP_ID production
-vercel env add FIREBASE_WEB_MESSAGING_SENDER_ID production
-vercel env add FIREBASE_WEB_STORAGE_BUCKET production
-vercel env add ADMIN_EMAILS production     # your sign-in email, to reach /admin
-```
-
-The web config values are public by design — they ship to the browser either
-way, so they are not secrets. `FIREBASE_PROJECT_ID` is the one that matters for
-security: it is the audience the server checks every ID token against.
-
-**3. Run the migration** from here, against the **direct** (unpooled) Neon URL —
-functions are ephemeral, so nothing migrates at boot:
+The pooled URL goes through PgBouncer in transaction mode, which has no stable
+session state — so schema migrations, dumps and `LISTEN`/`NOTIFY` need the
+direct one. To get it:
 
 ```bash
 vercel env pull .env.production --environment=production
-DATABASE_URL="<direct neon url>" .venv/bin/alembic upgrade head
-DATABASE_URL="<direct neon url>" .venv/bin/python -m scripts.seed   # optional
+grep DATABASE_URL_UNPOOLED .env.production
 ```
 
-The app itself connects with the **pooled** URL (host contains `-pooler`) and
-`NullPool`, leaving pooling to Neon's PgBouncer.
-
-**4. Deploy:**
+Then run migrations with it:
 
 ```bash
-vercel deploy --prod
+DATABASE_URL="<DATABASE_URL_UNPOOLED value>" .venv/bin/alembic upgrade head
 ```
 
-**5. Authorise the domain in Firebase.** In the console under
+(Verified: repeated parameterised queries across commits work fine over the
+pooled URL — Neon's PgBouncer supports protocol-level prepared statements, so
+psycopg3 needs no `prepare_threshold` workaround.)
+
+### Remaining steps
+
+**1. Authorise the domain in Firebase.** In the console under
 **Authentication → Settings → Authorized domains**, add
 `commute.ruansonder-r.com`. Until you do, Google sign-in fails with
-`auth/unauthorized-domain` — the single most common first-deploy failure. Add
-the `*.vercel.app` preview domain too if you want sign-in working on previews.
+`auth/unauthorized-domain` — the single most common first-deploy failure.
+
+**2. Deploy:**
+
+```bash
+vercel deploy --prod      # or push master, which deploys automatically
+```
+
+**3. Sign in once**, then add a car, trip, group and memberships under
+`/admin`. Splits must total 100% before trips can be logged. `scripts/seed.py`
+can pre-fill a car/trip/group if you would rather start from the old seed data.
+
+### Known gaps in the current setup
+
+- **`ADMIN_EMAILS` and the `FIREBASE_*` vars are set on Production only.**
+  Preview deployments will build but sign-in will fail on them. Copy them to
+  Preview (`vercel env add <NAME> preview`) if you want working previews, and
+  add the `*.vercel.app` domain to Firebase's authorized domains too.
+- **There is a stray environment variable literally named `commoter`** on
+  Production. It looks like a mistyped `vercel env add` — the app never reads
+  it. Remove it with `vercel env rm commoter production`.
 
 ### A note on the GitHub connection
 
