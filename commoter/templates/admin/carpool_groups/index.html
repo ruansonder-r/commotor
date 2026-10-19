@@ -8,12 +8,13 @@
 </div>
 {% if records %}
   <table class="admin-table">
-    <thead><tr><th>Name</th><th>Month</th><th>Car</th><th>Trip</th><th></th></tr></thead>
+    <thead><tr><th>Name</th><th>Month</th><th>Series</th><th>Car</th><th>Trip</th><th></th></tr></thead>
     <tbody>
       {% for group in records %}
         <tr>
           <td>{{ group.name }}</td>
           <td>{{ group.month|month_label }}</td>
+          <td>{% if group.series %}{{ group.series.name }}{% else %}&mdash;{% endif %}</td>
           <td>{{ group.car.name }}</td>
           <td>{{ group.trip.name }}</td>
           <td>

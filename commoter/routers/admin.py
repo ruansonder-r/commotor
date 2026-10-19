@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 
 from ..db import get_db
 from ..errors import NotFoundError, ValidationError
-from ..models import Car, CarpoolGroup, Membership, Trip, User
+from ..models import Car, CarpoolGroup, CarpoolSeries, Membership, Trip, User
 from ..security import require_admin, verify_csrf
 from ..templating import redirect, render
 from ..validation import (
@@ -227,6 +227,7 @@ register(
             "month": group.month.isoformat(),
             "car_id": group.car_id,
             "trip_id": group.trip_id,
+            "series_id": group.series_id,
         },
         listing=lambda db: list(
             db.scalars(select(CarpoolGroup).order_by(CarpoolGroup.month.desc())).unique()
@@ -234,6 +235,11 @@ register(
         form_context=lambda db: {
             "cars": list(db.scalars(select(Car).order_by(Car.name))),
             "trips": list(db.scalars(select(Trip).order_by(Trip.name))),
+            # Series have no CRUD of their own — members create them implicitly.
+            # This select is the escape hatch for moving a month between them.
+            "series": list(
+                db.scalars(select(CarpoolSeries).order_by(CarpoolSeries.name))
+            ),
         },
     )
 )

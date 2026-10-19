@@ -2,9 +2,10 @@
 {% block title %}My Groups &mdash; Commoter{% endblock %}
 
 {% block content %}
-{% if groups %}
+{% if cards %}
   <ul class="group-list">
-    {% for group in groups %}
+    {% for card in cards %}
+      {% set group = card.group %}
       <li class="group-card">
         {# data-turbo="false" so the + does a plain post+redirect and the list
            re-renders with the new count, matching the old behaviour. #}
@@ -16,7 +17,10 @@
         <a href="/carpool_groups/{{ group.id }}" class="group-card__link">
           <div class="group-card__body">
             <span class="group-card__name">{{ group.name }}</span>
-            <span class="group-card__meta">{{ group.month|month_label }}</span>
+            <span class="group-card__meta">
+              {{ group.month|month_label }}
+              {% if card.month_count > 1 %}&middot; {{ card.month_count }} months{% endif %}
+            </span>
             <span class="group-card__meta">{{ group.car.name }} &middot; {{ group.trip.name }}</span>
           </div>
           <span class="group-card__count">{{ group.total_trips }}</span>
@@ -30,4 +34,8 @@
     <p>You are not a member of any carpool groups yet.</p>
   </div>
 {% endif %}
+
+<div class="fab-container">
+  <a href="/carpool_groups/new" class="fab" aria-label="Add a carpool group for a new month">+</a>
+</div>
 {% endblock %}

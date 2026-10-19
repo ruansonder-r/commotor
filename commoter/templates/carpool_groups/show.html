@@ -11,6 +11,8 @@
     <span class="group-meta__item">{{ group.trip.name }} ({{ group.trip.distance_km|trim }} km)</span>
   </div>
 
+  {% include "carpool_groups/_month_switcher.html" %}
+
   <turbo-frame id="tally_carpool_group_{{ group.id }}">
     {% include "carpool_groups/_tally.html" %}
   </turbo-frame>

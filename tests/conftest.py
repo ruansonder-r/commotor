@@ -29,6 +29,7 @@ from commoter.main import app  # noqa: E402
 from commoter.models import (  # noqa: E402
     Car,
     CarpoolGroup,
+    CarpoolSeries,
     Membership,
     Trip,
     TripLog,
@@ -94,6 +95,13 @@ def make():
             db.refresh(user)
             return user
 
+        def series(self, db, *, name="Commute") -> CarpoolSeries:
+            series = CarpoolSeries(name=name)
+            db.add(series)
+            db.commit()
+            db.refresh(series)
+            return series
+
         def group(
             self,
             db,
@@ -102,13 +110,20 @@ def make():
             distance_km="70",
             name="Commute",
             month=dt.date(2026, 5, 1),
+            series=None,
         ) -> CarpoolGroup:
             n = self._next()
             car = Car(name=f"V40 {n}", cost_per_km=Decimal(cost_per_km))
             trip = Trip(name=f"Commute {n}", distance_km=Decimal(distance_km))
             db.add_all([car, trip])
             db.flush()
-            group = CarpoolGroup(name=name, month=month, car_id=car.id, trip_id=trip.id)
+            group = CarpoolGroup(
+                name=name,
+                month=month,
+                car_id=car.id,
+                trip_id=trip.id,
+                series_id=series.id if series else None,
+            )
             db.add(group)
             db.commit()
             db.refresh(group)

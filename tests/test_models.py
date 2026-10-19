@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import datetime as dt
 from decimal import Decimal
 
 
@@ -78,3 +79,36 @@ def test_history_is_newest_first_even_within_the_same_second(db, make):
     assert [log.id for log in group.trip_logs] == sorted(
         (log.id for log in logs), reverse=True
     )
+
+
+# --- Series -----------------------------------------------------------------
+
+
+def test_series_lists_its_months_newest_first(db, make):
+    series = make.series(db, name="Morning Crew")
+    make.group(db, month=dt.date(2026, 4, 1), series=series)
+    may = make.group(db, month=dt.date(2026, 5, 1), series=series)
+    june = make.group(db, month=dt.date(2026, 6, 1), series=series)
+
+    db.refresh(series)
+    assert [g.month for g in series.groups] == [
+        june.month,
+        may.month,
+        dt.date(2026, 4, 1),
+    ]
+
+
+def test_series_key_groups_months_of_one_series(db, make):
+    series = make.series(db)
+    may = make.group(db, month=dt.date(2026, 5, 1), series=series)
+    june = make.group(db, month=dt.date(2026, 6, 1), series=series)
+
+    assert may.series_key == june.series_key
+
+
+def test_series_key_keeps_a_group_without_a_series_separate(db, make):
+    loose = make.group(db, name="Commute", month=dt.date(2026, 5, 1))
+    other = make.group(db, name="Commute", month=dt.date(2026, 6, 1))
+
+    assert loose.series_key != other.series_key
+    assert loose.series_key == ("group", loose.id)

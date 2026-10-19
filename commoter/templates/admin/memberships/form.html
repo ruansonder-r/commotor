@@ -6,7 +6,7 @@
 <div class="form-card">
   <form method="post" action="{{ action }}">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-    {% include "admin/_errors.html" %}
+    {% include "_errors.html" %}
     <div class="form-group">
       <label for="membership_user">User</label>
       <select id="membership_user" name="user_id">

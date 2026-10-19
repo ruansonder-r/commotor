@@ -93,6 +93,24 @@ class Trip(TimestampMixin, Base):
     carpool_groups: Mapped[list[CarpoolGroup]] = relationship(back_populates="trip")
 
 
+class CarpoolSeries(TimestampMixin, Base):
+    """The thread that ties one carpool arrangement's months together.
+
+    Deliberately only `(id, name)`: the car and the trip stay on each month, so
+    an admin editing one month cannot leave the series disagreeing with its own
+    rows, and a series whose last month is deleted holds no FK hostage.
+    """
+
+    __tablename__ = "carpool_series"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+
+    groups: Mapped[list[CarpoolGroup]] = relationship(
+        back_populates="series", order_by="CarpoolGroup.month.desc()"
+    )
+
+
 class CarpoolGroup(TimestampMixin, Base):
     __tablename__ = "carpool_groups"
 
@@ -105,9 +123,17 @@ class CarpoolGroup(TimestampMixin, Base):
     trip_id: Mapped[int] = mapped_column(
         ForeignKey("trips.id"), nullable=False, index=True
     )
+    # Nullable on purpose: a group with no series is a standalone month, which
+    # is exactly what the admin create form still produces.
+    series_id: Mapped[int | None] = mapped_column(
+        ForeignKey("carpool_series.id"), nullable=True, index=True
+    )
 
     car: Mapped[Car] = relationship(back_populates="carpool_groups", lazy="joined")
     trip: Mapped[Trip] = relationship(back_populates="carpool_groups", lazy="joined")
+    series: Mapped[CarpoolSeries | None] = relationship(
+        back_populates="groups", lazy="joined"
+    )
     memberships: Mapped[list[Membership]] = relationship(
         back_populates="carpool_group",
         cascade="all, delete-orphan",
@@ -118,6 +144,11 @@ class CarpoolGroup(TimestampMixin, Base):
         cascade="all, delete-orphan",
         order_by="(TripLog.created_at.desc(), TripLog.id.desc())",
     )
+
+    @property
+    def series_key(self) -> tuple[str, int]:
+        """Dashboard grouping key — a group with no series is its own series of one."""
+        return ("series", self.series_id) if self.series_id else ("group", self.id)
 
     @property
     def trip_cost(self) -> Decimal:

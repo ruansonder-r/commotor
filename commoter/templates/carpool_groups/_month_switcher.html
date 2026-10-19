@@ -1,0 +1,9 @@
+{% if months|length > 1 %}
+  <nav class="month-switcher" aria-label="Months of this group">
+    {% for sibling in months %}
+      <a href="/carpool_groups/{{ sibling.id }}"
+         class="month-switcher__pill {% if sibling.id == group.id %}month-switcher__pill--active{% endif %}"
+         {% if sibling.id == group.id %}aria-current="page"{% endif %}>{{ sibling.month|month_label }}</a>
+    {% endfor %}
+  </nav>
+{% endif %}

@@ -7,13 +7,23 @@ templates read the same.
 from __future__ import annotations
 
 import datetime as dt
+import re
 from decimal import Decimal, InvalidOperation
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .errors import ValidationError
-from .models import ONE, ZERO, Car, CarpoolGroup, Membership, Trip, User
+from .models import (
+    ONE,
+    ZERO,
+    Car,
+    CarpoolGroup,
+    CarpoolSeries,
+    Membership,
+    Trip,
+    User,
+)
 
 SPLIT_TOLERANCE = Decimal("0.001")
 
@@ -58,6 +68,19 @@ def parse_date(value: str | None, label: str) -> dt.date:
         raise ValidationError(f"{label} is not a valid date") from None
 
 
+def parse_month(value: str | None, label: str) -> dt.date:
+    """A month, however the browser chose to submit it, snapped to the 1st.
+
+    `<input type="month">` sends `YYYY-MM`; Safari and Firefox fall back to a
+    plain text box, and the admin form still uses `<input type="date">`, so both
+    shapes have to parse into the same date.
+    """
+    text = (value or "").strip()
+    if re.fullmatch(r"\d{4}-\d{2}", text):
+        text = f"{text}-01"
+    return parse_date(text, label).replace(day=1)
+
+
 def parse_fk(db: Session, model, value: str | None, label: str):
     text = (value or "").strip()
     if not text:
@@ -88,12 +111,23 @@ def validate_trip_fields(form) -> dict:
     }
 
 
-def validate_carpool_group_fields(db: Session, form) -> dict:
+def validate_new_group_fields(db: Session, form) -> dict:
+    """The member-facing create form. The series is the route's business."""
     return {
         "name": parse_required_string(form.get("name"), "Name"),
-        "month": parse_date(form.get("month"), "Month"),
+        "month": parse_month(form.get("month"), "Month"),
         "car_id": parse_fk(db, Car, form.get("car_id"), "Car").id,
         "trip_id": parse_fk(db, Trip, form.get("trip_id"), "Trip").id,
+    }
+
+
+def validate_carpool_group_fields(db: Session, form) -> dict:
+    """The admin form: the same fields, plus an optional series to thread it on."""
+    series_id = (form.get("series_id") or "").strip()
+    return validate_new_group_fields(db, form) | {
+        "series_id": (
+            parse_fk(db, CarpoolSeries, series_id, "Series").id if series_id else None
+        ),
     }
 
 
@@ -128,6 +162,26 @@ def validate_membership_fields(
         "carpool_group_id": group.id,
         "cost_split_percentage": split,
     }
+
+
+def assert_month_is_free(
+    db: Session, series_id: int | None, month: dt.date, *, exclude_id: int | None = None
+) -> None:
+    """One month per series — the months of a group are distinct by definition.
+
+    A group with no series is in no series, so nothing constrains its month.
+    """
+    if series_id is None:
+        return
+    clash = db.scalar(
+        select(CarpoolGroup).where(
+            CarpoolGroup.series_id == series_id,
+            CarpoolGroup.month == month,
+            CarpoolGroup.id != (exclude_id or -1),
+        )
+    )
+    if clash is not None:
+        raise ValidationError("Month has already been taken for this group")
 
 
 def assert_can_log_trip(group: CarpoolGroup) -> None:

@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import datetime as dt
 from decimal import Decimal
 
 from sqlalchemy import select
 
-from commoter.models import Car, Membership, TripLog
+from commoter.models import Car, CarpoolGroup, CarpoolSeries, Membership, TripLog
 
 from .conftest import csrf_token_from
 
@@ -275,3 +276,333 @@ def test_unknown_paths_render_the_404_page(client, db, make, sign_in):
     response = client.get("/nope")
     assert response.status_code == 404
     assert "isn" in response.text
+
+
+# --- Multi-month groups -----------------------------------------------------
+
+
+def test_dashboard_shows_one_card_per_series_at_its_latest_month(
+    client, db, make, sign_in
+):
+    alice = make.user(db, name="Alice")
+    series = make.series(db, name="Morning Crew")
+    may = make.group(db, name="Morning Crew", month=dt.date(2026, 5, 1), series=series)
+    june = make.group(db, name="Morning Crew", month=dt.date(2026, 6, 1), series=series)
+    make.membership(db, alice, may, "1.0")
+    make.membership(db, alice, june, "1.0")
+    sign_in(alice)
+
+    body = client.get("/dashboard").text
+    assert f'href="/carpool_groups/{june.id}"' in body
+    assert f'href="/carpool_groups/{may.id}"' not in body
+    assert "June 2026" in body
+    assert "2 months" in body
+
+
+def test_dashboard_shows_groups_without_a_series_individually(client, db, make, sign_in):
+    alice = make.user(db, name="Alice")
+    first = make.group(db, name="Commute", month=dt.date(2026, 5, 1))
+    second = make.group(db, name="Commute", month=dt.date(2026, 6, 1))
+    make.membership(db, alice, first, "1.0")
+    make.membership(db, alice, second, "1.0")
+    sign_in(alice)
+
+    body = client.get("/dashboard").text
+    assert f'href="/carpool_groups/{first.id}"' in body
+    assert f'href="/carpool_groups/{second.id}"' in body
+    assert "months" not in body  # a series of one gets no month count
+
+
+def test_dashboard_renders_the_add_button(client, db, make, sign_in):
+    """Including for a user with no groups at all — it is how they get a first one."""
+    sign_in(make.user(db))
+
+    body = client.get("/dashboard").text
+    assert 'href="/carpool_groups/new"' in body
+
+
+def test_the_new_group_form_lists_only_the_users_own_groups_to_copy(
+    client, db, make, sign_in
+):
+    alice = make.user(db, name="Alice")
+    mine = make.group(db, name="My Commute")
+    theirs = make.group(db, name="Their Commute")
+    make.membership(db, alice, mine, "1.0")
+    make.membership(db, make.user(db, name="Bob"), theirs, "1.0")
+    sign_in(alice)
+
+    body = client.get("/carpool_groups/new").text
+    assert "My Commute &mdash; May 2026" in body
+    assert "Their Commute" not in body
+
+
+def test_creating_a_blank_group_adds_the_creator_at_one_hundred_percent(
+    client, db, make, sign_in
+):
+    masterdata = make.group(db)  # only here for a car and a trip to point at
+    alice = make.user(db, name="Alice")
+    sign_in(alice)
+    token = csrf_token_from(client, "/carpool_groups/new")
+
+    response = client.post(
+        "/carpool_groups",
+        data={
+            "_csrf": token,
+            "name": "Morning Crew",
+            "month": "2026-06",
+            "car_id": str(masterdata.car_id),
+            "trip_id": str(masterdata.trip_id),
+        },
+        follow_redirects=False,
+    )
+
+    db.expire_all()
+    created = db.scalar(select(CarpoolGroup).where(CarpoolGroup.name == "Morning Crew"))
+    assert created is not None
+    assert response.status_code == 303
+    assert response.headers["location"] == f"/carpool_groups/{created.id}"
+    assert created.month == dt.date(2026, 6, 1)
+    assert created.series_id is not None
+    assert [(m.user_id, m.cost_split_percentage) for m in created.memberships] == [
+        (alice.id, Decimal("1.0000"))
+    ]
+
+
+def test_creating_from_an_existing_group_copies_its_members_and_splits(
+    client, db, make, sign_in
+):
+    series = make.series(db, name="Morning Crew")
+    may = make.group(db, name="Morning Crew", month=dt.date(2026, 5, 1), series=series)
+    alice = make.user(db, name="Alice")
+    bob = make.user(db, name="Bob")
+    make.membership(db, alice, may, "0.60")
+    make.membership(db, bob, may, "0.40")
+    sign_in(alice)
+    token = csrf_token_from(client, "/carpool_groups/new")
+
+    client.post(
+        "/carpool_groups",
+        data={
+            "_csrf": token,
+            "copy_from": str(may.id),
+            "name": "Morning Crew",
+            "month": "2026-06",
+            "car_id": str(may.car_id),
+            "trip_id": str(may.trip_id),
+        },
+    )
+
+    db.expire_all()
+    june = db.scalar(
+        select(CarpoolGroup).where(CarpoolGroup.month == dt.date(2026, 6, 1))
+    )
+    assert june.series_id == series.id
+    assert sorted(
+        (m.user_id, m.cost_split_percentage) for m in june.memberships
+    ) == sorted([(alice.id, Decimal("0.6000")), (bob.id, Decimal("0.4000"))])
+
+
+def test_rolling_forward_a_group_without_a_series_threads_both_months(
+    client, db, make, sign_in
+):
+    """A group created before series existed must not have its history split."""
+    loose = make.group(db, name="Commute", month=dt.date(2026, 5, 1))
+    alice = make.user(db, name="Alice")
+    make.membership(db, alice, loose, "1.0")
+    sign_in(alice)
+    token = csrf_token_from(client, "/carpool_groups/new")
+
+    client.post(
+        "/carpool_groups",
+        data={
+            "_csrf": token,
+            "copy_from": str(loose.id),
+            "name": "Commute",
+            "month": "2026-06",
+            "car_id": str(loose.car_id),
+            "trip_id": str(loose.trip_id),
+        },
+    )
+
+    db.expire_all()
+    db.refresh(loose)
+    june = db.scalar(
+        select(CarpoolGroup).where(CarpoolGroup.month == dt.date(2026, 6, 1))
+    )
+    assert loose.series_id is not None
+    assert june.series_id == loose.series_id
+
+
+def test_a_duplicate_month_in_a_series_re_renders_the_form(client, db, make, sign_in):
+    series = make.series(db, name="Morning Crew")
+    may = make.group(db, name="Morning Crew", month=dt.date(2026, 5, 1), series=series)
+    alice = make.user(db, name="Alice")
+    make.membership(db, alice, may, "1.0")
+    sign_in(alice)
+    token = csrf_token_from(client, "/carpool_groups/new")
+
+    response = client.post(
+        "/carpool_groups",
+        data={
+            "_csrf": token,
+            "copy_from": str(may.id),
+            "name": "Renamed Crew",
+            "month": "2026-05",
+            "car_id": str(may.car_id),
+            "trip_id": str(may.trip_id),
+        },
+    )
+
+    assert response.status_code == 422
+    assert "Month has already been taken for this group" in response.text
+    assert 'value="Renamed Crew"' in response.text  # the submitted value survives
+
+    db.expire_all()
+    assert len(db.scalars(select(CarpoolGroup)).unique().all()) == 1
+    assert len(db.scalars(select(CarpoolSeries)).all()) == 1
+
+
+def test_copying_from_someone_elses_group_is_a_404(client, db, make, sign_in):
+    theirs = make.group(db, name="Their Commute")
+    make.membership(db, make.user(db, name="Bob"), theirs, "1.0")
+    alice = make.user(db, name="Alice")
+    sign_in(alice)
+    token = csrf_token_from(client, "/carpool_groups/new")
+
+    response = client.post(
+        "/carpool_groups",
+        data={
+            "_csrf": token,
+            "copy_from": str(theirs.id),
+            "name": "Sneaky",
+            "month": "2026-06",
+            "car_id": str(theirs.car_id),
+            "trip_id": str(theirs.trip_id),
+        },
+    )
+
+    assert response.status_code == 404
+    db.expire_all()
+    assert db.scalar(select(CarpoolGroup).where(CarpoolGroup.name == "Sneaky")) is None
+
+
+def test_a_junk_copy_from_is_a_404_not_a_crash(client, db, make, sign_in):
+    masterdata = make.group(db)
+    sign_in(make.user(db, name="Alice"))
+    token = csrf_token_from(client, "/carpool_groups/new")
+
+    response = client.post(
+        "/carpool_groups",
+        data={
+            "_csrf": token,
+            "copy_from": "not-an-id",
+            "name": "Sneaky",
+            "month": "2026-06",
+            "car_id": str(masterdata.car_id),
+            "trip_id": str(masterdata.trip_id),
+        },
+    )
+
+    assert response.status_code == 404
+
+
+def test_creating_a_group_without_a_csrf_token_is_rejected(client, db, make, sign_in):
+    masterdata = make.group(db)
+    sign_in(make.user(db, name="Alice"))
+    csrf_token_from(client)  # establish a session that does have a token
+
+    response = client.post(
+        "/carpool_groups",
+        data={
+            "name": "Morning Crew",
+            "month": "2026-06",
+            "car_id": str(masterdata.car_id),
+            "trip_id": str(masterdata.trip_id),
+        },
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+    db.expire_all()
+    assert (
+        db.scalar(select(CarpoolGroup).where(CarpoolGroup.name == "Morning Crew"))
+        is None
+    )
+
+
+def test_the_group_page_shows_the_other_months_of_its_series(client, db, make, sign_in):
+    series = make.series(db, name="Morning Crew")
+    may = make.group(db, name="Morning Crew", month=dt.date(2026, 5, 1), series=series)
+    june = make.group(db, name="Morning Crew", month=dt.date(2026, 6, 1), series=series)
+    alice = make.user(db, name="Alice")
+    make.membership(db, alice, may, "1.0")
+    make.membership(db, alice, june, "1.0")
+    sign_in(alice)
+
+    body = client.get(f"/carpool_groups/{june.id}").text
+    assert "month-switcher" in body
+    assert f'href="/carpool_groups/{may.id}"' in body
+    assert "May 2026" in body
+
+
+def test_the_month_switcher_hides_months_the_user_is_not_a_member_of(
+    client, db, make, sign_in
+):
+    series = make.series(db, name="Morning Crew")
+    april = make.group(db, name="Morning Crew", month=dt.date(2026, 4, 1), series=series)
+    may = make.group(db, name="Morning Crew", month=dt.date(2026, 5, 1), series=series)
+    june = make.group(db, name="Morning Crew", month=dt.date(2026, 6, 1), series=series)
+    bob = make.user(db, name="Bob")
+    make.membership(db, bob, april, "1.0")
+    make.membership(db, make.user(db, name="Alice"), may, "1.0")
+    make.membership(db, bob, june, "1.0")
+    sign_in(bob)
+
+    body = client.get(f"/carpool_groups/{june.id}").text
+    assert f'href="/carpool_groups/{april.id}"' in body
+    assert f'href="/carpool_groups/{may.id}"' not in body
+    assert "May 2026" not in body
+
+
+def test_a_single_month_group_has_no_month_switcher(client, db, make, sign_in):
+    group = make.group(db)
+    alice = make.user(db, name="Alice")
+    make.membership(db, alice, group, "1.0")
+    sign_in(alice)
+
+    assert "month-switcher" not in client.get(f"/carpool_groups/{group.id}").text
+
+
+def test_the_admin_group_list_shows_the_series(client, db, make, sign_in):
+    series = make.series(db, name="Morning Crew")
+    make.group(db, name="June", month=dt.date(2026, 6, 1), series=series)
+    make.group(db, name="Loose", month=dt.date(2026, 5, 1))
+    sign_in(make.user(db, admin=True))
+
+    body = client.get("/admin/carpool_groups").text
+    assert "<th>Series</th>" in body
+    assert "<td>Morning Crew</td>" in body
+    assert "<td>&mdash;</td>" in body  # the standalone month, not double-escaped
+
+
+def test_an_admin_can_move_a_month_onto_a_series(client, db, make, sign_in):
+    group = make.group(db, name="Loose", month=dt.date(2026, 5, 1))
+    series = make.series(db, name="Morning Crew")
+    sign_in(make.user(db, admin=True))
+    token = csrf_token_from(client, f"/admin/carpool_groups/{group.id}/edit")
+
+    client.post(
+        f"/admin/carpool_groups/{group.id}",
+        data={
+            "_csrf": token,
+            "name": "Loose",
+            "month": "2026-05-01",
+            "car_id": str(group.car_id),
+            "trip_id": str(group.trip_id),
+            "series_id": str(series.id),
+        },
+    )
+
+    db.expire_all()
+    db.refresh(group)
+    assert group.series_id == series.id

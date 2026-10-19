@@ -137,7 +137,38 @@ a { color: var(--color-primary); text-decoration: none; }
 }
 
 /* ─── Group List (Dashboard) ────────────────────────────────────── */
-.group-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+/* 76px, not the .main-content 72px: this is the one page with a FAB over it. */
+.group-list { list-style: none; display: flex; flex-direction: column; gap: 8px; padding-bottom: 76px; }
+
+/* ─── Month Switcher ────────────────────────────────────────────── */
+/* Scrolls rather than wraps: a group that has run for two years must not
+   push the tally off the screen. */
+.month-switcher {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin-bottom: 16px;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.month-switcher__pill {
+  flex: none;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.month-switcher__pill--active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+}
 
 .group-card {
   background: var(--color-surface);
@@ -357,8 +388,11 @@ a { color: var(--color-primary); text-decoration: none; }
 /* ─── FAB ───────────────────────────────────────────────────────── */
 .fab-container {
   position: fixed;
-  bottom: 24px;
+  /* Clear of the tab bar (14px padding x2 + 13px/1.5 text + 1px border ≈ 48px),
+     and above it: .tab-bar is z-index 10, so without this the FAB is behind it. */
+  bottom: calc(48px + 16px);
   right: 24px;
+  z-index: 11;
 }
 
 .fab-container form { margin: 0; }
@@ -377,8 +411,11 @@ a { color: var(--color-primary); text-decoration: none; }
   display: flex;
   align-items: center;
   justify-content: center;
+  line-height: 1;  /* the FAB is an <a>, so the glyph needs centring explicitly */
   transition: background 0.15s, transform 0.1s;
 }
+
+.fab:hover { color: white; }
 
 .fab:active { background: var(--color-primary-dk); transform: scale(0.95); }
 
@@ -496,6 +533,7 @@ a { color: var(--color-primary); text-decoration: none; }
 .form-group input[type="text"],
 .form-group input[type="number"],
 .form-group input[type="date"],
+.form-group input[type="month"],
 .form-group select {
   width: 100%;
   padding: 10px 12px;
@@ -510,6 +548,12 @@ a { color: var(--color-primary); text-decoration: none; }
 .form-group select:focus {
   outline: none;
   border-color: var(--color-primary);
+}
+
+.form-hint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--color-muted);
 }
 
 .form-errors {

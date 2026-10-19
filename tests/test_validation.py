@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import datetime as dt
 from decimal import Decimal
 
 import pytest
@@ -9,8 +10,10 @@ import pytest
 from commoter.errors import ValidationError
 from commoter.validation import (
     assert_can_log_trip,
+    assert_month_is_free,
     assert_removable,
     assert_trip_count,
+    parse_month,
     validate_car_fields,
     validate_carpool_group_fields,
     validate_membership_fields,
@@ -196,3 +199,106 @@ def test_a_car_in_use_cannot_be_removed(db, make):
     with pytest.raises(ValidationError) as exc:
         assert_removable(group.car, "car")
     assert "carpool groups still reference it" in exc.value.messages[0]
+
+
+# --- Months -----------------------------------------------------------------
+
+
+def test_month_accepts_a_year_month_value():
+    """What `<input type="month">` actually submits."""
+    assert parse_month("2026-06", "Month") == dt.date(2026, 6, 1)
+
+
+def test_month_accepts_a_full_iso_date():
+    """What the browsers without a month picker, and the admin form, submit."""
+    assert parse_month("2026-06-01", "Month") == dt.date(2026, 6, 1)
+
+
+def test_month_snaps_to_the_first_of_the_month(db, make):
+    group = make.group(db)
+    parsed = validate_carpool_group_fields(
+        db,
+        {
+            "name": "Crew",
+            "month": "2026-06-15",
+            "car_id": str(group.car_id),
+            "trip_id": str(group.trip_id),
+        },
+    )
+    assert parsed["month"] == dt.date(2026, 6, 1)
+    assert parsed["series_id"] is None
+
+
+def test_month_is_required():
+    with pytest.raises(ValidationError) as exc:
+        parse_month("  ", "Month")
+    assert "Month can't be blank" in exc.value.messages
+
+
+def test_month_rejects_junk():
+    with pytest.raises(ValidationError) as exc:
+        parse_month("2026-13", "Month")
+    assert "Month is not a valid date" in exc.value.messages
+
+
+def test_a_series_cannot_hold_two_groups_for_one_month(db, make):
+    series = make.series(db)
+    make.group(db, month=dt.date(2026, 5, 1), series=series)
+
+    with pytest.raises(ValidationError) as exc:
+        assert_month_is_free(db, series.id, dt.date(2026, 5, 1))
+    assert "Month has already been taken for this group" in exc.value.messages
+
+
+def test_a_free_month_in_the_same_series_is_allowed(db, make):
+    series = make.series(db)
+    make.group(db, month=dt.date(2026, 5, 1), series=series)
+
+    assert_month_is_free(db, series.id, dt.date(2026, 6, 1))  # does not raise
+
+
+def test_the_same_month_in_another_series_is_allowed(db, make):
+    taken = make.series(db, name="Morning Crew")
+    other = make.series(db, name="School Run")
+    make.group(db, month=dt.date(2026, 5, 1), series=taken)
+
+    assert_month_is_free(db, other.id, dt.date(2026, 5, 1))  # does not raise
+
+
+def test_a_group_without_a_series_is_not_constrained_by_other_months(db, make):
+    make.group(db, month=dt.date(2026, 5, 1))
+
+    assert_month_is_free(db, None, dt.date(2026, 5, 1))  # does not raise
+
+
+def test_the_admin_form_can_thread_a_group_onto_a_series(db, make):
+    group = make.group(db)
+    series = make.series(db, name="Morning Crew")
+
+    parsed = validate_carpool_group_fields(
+        db,
+        {
+            "name": "Crew",
+            "month": "2026-06",
+            "car_id": str(group.car_id),
+            "trip_id": str(group.trip_id),
+            "series_id": str(series.id),
+        },
+    )
+    assert parsed["series_id"] == series.id
+
+
+def test_an_unknown_series_is_rejected(db, make):
+    group = make.group(db)
+    with pytest.raises(ValidationError) as exc:
+        validate_carpool_group_fields(
+            db,
+            {
+                "name": "Crew",
+                "month": "2026-06",
+                "car_id": str(group.car_id),
+                "trip_id": str(group.trip_id),
+                "series_id": "99999",
+            },
+        )
+    assert "Series must exist" in exc.value.messages

@@ -6,7 +6,7 @@
 <div class="form-card">
   <form method="post" action="{{ action }}">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-    {% include "admin/_errors.html" %}
+    {% include "_errors.html" %}
     <div class="form-group">
       <label for="group_name">Name</label>
       <input type="text" id="group_name" name="name" value="{{ values.name or '' }}" placeholder="e.g. Morning Crew">
@@ -30,6 +30,15 @@
         <option value="">Select a trip</option>
         {% for trip in trips %}
           <option value="{{ trip.id }}" {% if values.trip_id and values.trip_id|string == trip.id|string %}selected{% endif %}>{{ trip.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="group_series">Series</label>
+      <select id="group_series" name="series_id">
+        <option value="">&mdash; Standalone month &mdash;</option>
+        {% for entry in series %}
+          <option value="{{ entry.id }}" {% if values.series_id and values.series_id|string == entry.id|string %}selected{% endif %}>{{ entry.name }}</option>
         {% endfor %}
       </select>
     </div>
