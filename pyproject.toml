@@ -4,6 +4,32 @@ version = "1.0.0"
 description = "Carpool trip tracking and cost splitting."
 requires-python = ">=3.12"
 
+# Vercel's Python builder installs from THIS list (uv reads pyproject.toml and
+# ignores requirements.txt when it is present). requirements.txt is kept for the
+# plain-pip local workflow; tests/test_packaging.py fails if the two drift.
+dependencies = [
+  "alembic==1.20.0",
+  "cryptography==50.0.2",
+  "fastapi==0.146.0",
+  "httpx==0.28.1",
+  "itsdangerous==2.2.0",
+  "Jinja2==3.1.6",
+  "psycopg==3.3.6",
+  "psycopg-binary==3.3.6",
+  "PyJWT==2.15.1",
+  "python-multipart==0.0.32",
+  "reportlab==5.0.1",
+  "SQLAlchemy==2.1.5",
+  "starlette==1.9.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "uvicorn[standard]",
+  "pytest",
+  "ruff",
+]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
