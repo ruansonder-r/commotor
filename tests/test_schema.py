@@ -58,3 +58,16 @@ def _kind(diff) -> str:
     if isinstance(diff, list):
         return _kind(diff[0]) if diff else ""
     return diff[0] if isinstance(diff, tuple) else ""
+
+
+def test_production_without_a_database_url_fails_loudly(monkeypatch):
+    """A SQLite fallback on Vercel's read-only filesystem fails confusingly."""
+    import pytest
+
+    from commoter.config import Settings
+
+    monkeypatch.setenv("APP_ENV", "production")
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+
+    with pytest.raises(RuntimeError, match="DATABASE_URL is not set"):
+        Settings()

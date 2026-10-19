@@ -50,59 +50,85 @@ migrations still build exactly the schema the models describe.
 
 ## Deploying to Vercel
 
-### 1. Database
+The project is already linked: **`ruansonderrs-projects/commoter`**, connected
+to the `ruansonder-r/commotor` GitHub repo, with the function pinned to `fra1`
+(see `vercel.json`) to sit next to the database.
 
-Provision Neon from the Vercel Marketplace and link it to the project:
+Already done:
+
+- [x] `vercel link` — project created and linked
+- [x] `APP_ENV=production` set on production and preview
+- [x] `SESSION_SECRET` set on production and preview (a different secret each,
+      so a preview deploy cannot mint a production session)
+
+### Remaining steps
+
+**1. Accept the Neon marketplace terms** (one-off, needs a browser — a legal
+acceptance nobody can click on your behalf):
+
+<https://vercel.com/ruansonderrs-projects/~/integrations/accept-terms/neon>
+
+Then provision the database:
 
 ```bash
-vercel link
-vercel integration add neon
+vercel integration add neon \
+  --plan free_v3 --name commoter-db \
+  -m region=fra1 -m auth=false -m realtime=false \
+  -e production -e preview --no-env-pull
 ```
 
-That sets `DATABASE_URL` automatically. **Use the pooled connection string**
-(the host contains `-pooler`) — functions open a fresh connection per cold
-start, so PgBouncer does the pooling rather than the app.
+`auth=false` because sign-in is Firebase's job, and `region=fra1` to match
+`regions` in `vercel.json`. If you move the database, move the function too.
+This sets `DATABASE_URL` automatically.
 
-### 2. Environment variables
+**2. Add the Firebase values.** These are not recoverable from this repo — the
+Rails credentials were encrypted and `config/master.key` was never on this
+machine. Get them from the Firebase console under
+**Project settings → Your apps → Web app**:
 
 ```bash
-vercel env add SESSION_SECRET production     # python -c "import secrets; print(secrets.token_urlsafe(48))"
-vercel env add APP_ENV production            # value: production
 vercel env add FIREBASE_PROJECT_ID production
 vercel env add FIREBASE_WEB_API_KEY production
 vercel env add FIREBASE_WEB_AUTH_DOMAIN production
 vercel env add FIREBASE_WEB_APP_ID production
 vercel env add FIREBASE_WEB_MESSAGING_SENDER_ID production
 vercel env add FIREBASE_WEB_STORAGE_BUCKET production
-vercel env add ADMIN_EMAILS production       # comma-separated; grants admin on next sign-in
+vercel env add ADMIN_EMAILS production     # your sign-in email, to reach /admin
 ```
 
-`APP_ENV=production` is what turns on `Secure` session cookies and HSTS, and
-makes a missing `SESSION_SECRET` a hard startup error instead of a silent
-insecure default.
+The web config values are public by design — they ship to the browser either
+way, so they are not secrets. `FIREBASE_PROJECT_ID` is the one that matters for
+security: it is the audience the server checks every ID token against.
 
-### 3. Migrations
-
-Functions are ephemeral, so migrations are not run at boot. Run them from your
-machine against the **unpooled** (direct) Neon URL:
+**3. Run the migration** from here, against the **direct** (unpooled) Neon URL —
+functions are ephemeral, so nothing migrates at boot:
 
 ```bash
-vercel env pull .env.production
+vercel env pull .env.production --environment=production
 DATABASE_URL="<direct neon url>" .venv/bin/alembic upgrade head
 DATABASE_URL="<direct neon url>" .venv/bin/python -m scripts.seed   # optional
 ```
 
-### 4. Deploy
+The app itself connects with the **pooled** URL (host contains `-pooler`) and
+`NullPool`, leaving pooling to Neon's PgBouncer.
+
+**4. Deploy:**
 
 ```bash
 vercel deploy --prod
 ```
 
-### 5. Firebase
+**5. Authorise the domain in Firebase.** In the console under
+**Authentication → Settings → Authorized domains**, add the Vercel domain.
+Until you do, Google sign-in fails with `auth/unauthorized-domain` — the single
+most common first-deploy failure.
 
-In the Firebase console → **Authentication → Settings → Authorized domains**,
-add the Vercel domain. Google sign-in fails with `auth/unauthorized-domain`
-until you do, and that is the single most common first-deploy failure.
+### A note on the GitHub connection
+
+Linking connected the repo, so Vercel now builds on push: a push to any branch
+creates a preview deployment, and a push to the production branch deploys to
+production. Nothing has been pushed yet. Finish steps 1–3 before pushing, or
+the first preview will come up without a database.
 
 ---
 

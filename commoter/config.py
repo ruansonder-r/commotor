@@ -41,9 +41,19 @@ def _normalise_database_url(url: str) -> str:
 class Settings:
     def __init__(self) -> None:
         self.env = os.environ.get("APP_ENV", "development")
-        self.database_url = _normalise_database_url(
-            os.environ.get("DATABASE_URL") or f"sqlite:///{ROOT / 'commoter.db'}"
-        )
+
+        database_url = os.environ.get("DATABASE_URL")
+        if not database_url:
+            if self.env == "production":
+                # Falling back to SQLite here would "work" until the first write
+                # hit the read-only function filesystem, which is a baffling way
+                # to find out the database was never connected.
+                raise RuntimeError(
+                    "DATABASE_URL is not set. Connect the Neon integration to "
+                    "this project (vercel integration add neon) and redeploy."
+                )
+            database_url = f"sqlite:///{ROOT / 'commoter.db'}"
+        self.database_url = _normalise_database_url(database_url)
         self.session_secret = os.environ.get("SESSION_SECRET", "")
         self.firebase_project_id = os.environ.get("FIREBASE_PROJECT_ID", "commoter")
 
