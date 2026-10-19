@@ -1,0 +1,42 @@
+{% extends "layouts/application.html" %}
+{% block title %}{{ heading }} &mdash; Admin{% endblock %}
+{% block content %}
+{% include "admin/_nav.html" %}
+<div class="admin-header"><h2 class="admin-header__title">{{ heading }}</h2></div>
+<div class="form-card">
+  <form method="post" action="{{ action }}">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    {% include "admin/_errors.html" %}
+    <div class="form-group">
+      <label for="group_name">Name</label>
+      <input type="text" id="group_name" name="name" value="{{ values.name or '' }}" placeholder="e.g. Morning Crew">
+    </div>
+    <div class="form-group">
+      <label for="group_month">Month</label>
+      <input type="date" id="group_month" name="month" value="{{ values.month or '' }}">
+    </div>
+    <div class="form-group">
+      <label for="group_car">Car</label>
+      <select id="group_car" name="car_id">
+        <option value="">Select a car</option>
+        {% for car in cars %}
+          <option value="{{ car.id }}" {% if values.car_id and values.car_id|string == car.id|string %}selected{% endif %}>{{ car.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="group_trip">Trip</label>
+      <select id="group_trip" name="trip_id">
+        <option value="">Select a trip</option>
+        {% for trip in trips %}
+          <option value="{{ trip.id }}" {% if values.trip_id and values.trip_id|string == trip.id|string %}selected{% endif %}>{{ trip.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn--primary">Save</button>
+      <a href="/admin/carpool_groups" class="btn btn--ghost">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

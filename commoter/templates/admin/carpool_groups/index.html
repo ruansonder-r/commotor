@@ -1,0 +1,35 @@
+{% extends "layouts/application.html" %}
+{% block title %}Groups &mdash; Admin{% endblock %}
+{% block content %}
+{% include "admin/_nav.html" %}
+<div class="admin-header">
+  <h2 class="admin-header__title">Carpool Groups</h2>
+  <a href="/admin/carpool_groups/new" class="btn btn--primary btn--sm">Add Group</a>
+</div>
+{% if records %}
+  <table class="admin-table">
+    <thead><tr><th>Name</th><th>Month</th><th>Car</th><th>Trip</th><th></th></tr></thead>
+    <tbody>
+      {% for group in records %}
+        <tr>
+          <td>{{ group.name }}</td>
+          <td>{{ group.month|month_label }}</td>
+          <td>{{ group.car.name }}</td>
+          <td>{{ group.trip.name }}</td>
+          <td>
+            <div class="admin-table__actions">
+              <a href="/admin/carpool_groups/{{ group.id }}/edit" class="btn btn--ghost btn--sm">Edit</a>
+              {% with action = "/admin/carpool_groups/" ~ group.id ~ "/delete",
+                      confirm = "Remove " ~ group.name ~ "? This will also remove all members and trip logs." %}
+                {% include "admin/_delete_button.html" %}
+              {% endwith %}
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <div class="empty-state"><p>No groups yet.</p></div>
+{% endif %}
+{% endblock %}

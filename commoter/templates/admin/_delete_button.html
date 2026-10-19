@@ -1,0 +1,5 @@
+<form class="button_to" method="post" action="{{ action }}"
+      data-turbo-confirm="{{ confirm }}">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <button class="btn btn--danger btn--sm" type="submit">Remove</button>
+</form>

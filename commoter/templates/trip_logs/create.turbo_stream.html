@@ -1,0 +1,15 @@
+<turbo-stream action="replace" target="tally_carpool_group_{{ group.id }}">
+  <template>
+    <turbo-frame id="tally_carpool_group_{{ group.id }}">
+      {% include "carpool_groups/_tally.html" %}
+    </turbo-frame>
+  </template>
+</turbo-stream>
+
+<turbo-stream action="replace" target="audit_carpool_group_{{ group.id }}">
+  <template>
+    <turbo-frame id="audit_carpool_group_{{ group.id }}">
+      {% include "carpool_groups/_audit_log.html" %}
+    </turbo-frame>
+  </template>
+</turbo-stream>

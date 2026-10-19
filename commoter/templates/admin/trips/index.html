@@ -1,0 +1,32 @@
+{% extends "layouts/application.html" %}
+{% block title %}Trips &mdash; Admin{% endblock %}
+{% block content %}
+{% include "admin/_nav.html" %}
+<div class="admin-header">
+  <h2 class="admin-header__title">Trips</h2>
+  <a href="/admin/trips/new" class="btn btn--primary btn--sm">Add Trip</a>
+</div>
+{% if records %}
+  <table class="admin-table">
+    <thead><tr><th>Name</th><th>Distance (km)</th><th></th></tr></thead>
+    <tbody>
+      {% for trip in records %}
+        <tr>
+          <td>{{ trip.name }}</td>
+          <td>{{ trip.distance_km|trim }}</td>
+          <td>
+            <div class="admin-table__actions">
+              <a href="/admin/trips/{{ trip.id }}/edit" class="btn btn--ghost btn--sm">Edit</a>
+              {% with action = "/admin/trips/" ~ trip.id ~ "/delete", confirm = "Remove " ~ trip.name ~ "?" %}
+                {% include "admin/_delete_button.html" %}
+              {% endwith %}
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <div class="empty-state"><p>No trips yet.</p></div>
+{% endif %}
+{% endblock %}

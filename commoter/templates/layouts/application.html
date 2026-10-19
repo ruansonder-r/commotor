@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>{% block title %}Commoter{% endblock %}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="application-name" content="Commoter">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Commoter">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <meta name="theme-color" content="#1a73e8">
+
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/assets/racing.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+    <link rel="stylesheet" href="/assets/application.css">
+
+    {# Synchronous and inline on purpose: it has to beat first paint, or the
+       page flashes light before the stored dark theme is applied. #}
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("theme") || "light";
+          document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {}
+      })();
+    </script>
+
+    <script src="/assets/turbo.js" defer></script>
+    <script src="/assets/app.js" defer></script>
+    {% block head %}{% endblock %}
+  </head>
+
+  <body>
+    {% if current_user %}
+      <header class="app-header">
+        <span class="app-header__title">
+          <a href="/" class="app-header__logo" aria-label="Home">
+            <img src="/assets/racing.svg" height="36" alt="Commoter">
+          </a>
+        </span>
+        <div class="app-header__actions">
+          <button type="button" class="app-header__theme-toggle" data-theme-toggle>&#9790;</button>
+          <form class="button_to" method="post" action="/session/sign_out">
+            <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+            <button class="app-header__signout" type="submit">Sign out</button>
+          </form>
+        </div>
+      </header>
+    {% endif %}
+
+    {% for kind, message in flashes %}
+      <div class="flash flash--{{ kind }}">{{ message }}</div>
+    {% endfor %}
+
+    <main class="main-content">
+      {% block content %}{% endblock %}
+    </main>
+
+    {% if current_user %}
+      <nav class="tab-bar">
+        <a href="/" class="tab-bar__tab {% if not path.startswith('/admin') %}tab-bar__tab--active{% endif %}">My Commutes</a>
+        {% if current_user.is_admin %}
+          <a href="/admin/cars" class="tab-bar__tab {% if path.startswith('/admin') %}tab-bar__tab--active{% endif %}">Config Stuff</a>
+        {% endif %}
+      </nav>
+    {% endif %}
+  </body>
+</html>
