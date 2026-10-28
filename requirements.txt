@@ -8,6 +8,6 @@ psycopg==3.3.6
 psycopg-binary==3.3.6
 PyJWT==2.15.1
 python-multipart==0.0.32
-reportlab==5.0.1
+reportlab==5.1.0
 SQLAlchemy==2.1.5
 starlette==1.9.0
