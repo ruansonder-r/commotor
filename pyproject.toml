@@ -20,7 +20,7 @@ dependencies = [
   "python-multipart==0.0.32",
   "reportlab==5.0.1",
   "SQLAlchemy==2.1.5",
-  "starlette==1.9.0",
+  "starlette==1.10.0",
 ]
 
 [project.optional-dependencies]
